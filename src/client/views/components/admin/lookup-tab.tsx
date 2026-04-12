@@ -12,12 +12,22 @@ import type { LookupEntry } from "../../../viewmodels/admin-hub/types.ts";
 import { ADMIN_HUB_STRINGS } from "../../../viewmodels/admin-hub/strings.ts";
 
 const LOOKUP_TABLES = [
-  "genero",
-  "etnia",
-  "escolaridade",
-  "estado_civil",
-  "religiao",
-  "orientacao_sexual",
+  { value: "dominio_tipo_identidade", label: "Tipo de Identidade" },
+  { value: "dominio_tipo_deficiencia", label: "Tipo de Deficiência" },
+  { value: "dominio_parentesco", label: "Parentesco" },
+  { value: "dominio_programa_social", label: "Programa Social" },
+  { value: "dominio_condicao_ocupacao", label: "Condição de Ocupação" },
+  { value: "dominio_tipo_ingresso", label: "Tipo de Ingresso" },
+  { value: "dominio_escolaridade", label: "Escolaridade" },
+  { value: "dominio_tipo_beneficio", label: "Tipo de Benefício" },
+  {
+    value: "dominio_efeito_condicionalidade",
+    label: "Efeito de Condicionalidade",
+  },
+  { value: "dominio_tipo_violacao", label: "Tipo de Violação" },
+  { value: "dominio_servico_vinculo", label: "Serviço de Vínculo" },
+  { value: "dominio_tipo_medida", label: "Tipo de Medida" },
+  { value: "dominio_unidade_realizacao", label: "Unidade de Realização" },
 ] as const;
 
 interface LookupTabProps {
@@ -116,13 +126,16 @@ export const LookupTab: FC<LookupTabProps> = ({
     <select
       class={selectStyle}
       value={selectedTable ?? ""}
+      aria-label={ADMIN_HUB_STRINGS.lookupsSelectTable}
       onChange={(e) => {
         const val = (e.target as HTMLSelectElement).value;
         if (val) onSelectTable(val);
       }}
     >
       <option value="" disabled>{ADMIN_HUB_STRINGS.lookupsSelectTable}</option>
-      {LOOKUP_TABLES.map((t) => <option key={t} value={t}>{t}</option>)}
+      {LOOKUP_TABLES.map((t) => (
+        <option key={t.value} value={t.value}>{t.label}</option>
+      ))}
     </select>
 
     {selectedTable && entries.length === 0 && (
@@ -133,6 +146,7 @@ export const LookupTab: FC<LookupTabProps> = ({
       <div key={entry.id} class={entryRowStyle}>
         <span class={entryLabel}>{entry.label}</span>
         <button
+          type="button"
           class={cx(
             toggleBtnBase,
             entry.active ? toggleActive : toggleInactive,
