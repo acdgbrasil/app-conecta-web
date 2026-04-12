@@ -11,17 +11,23 @@ export type { SecureHeadersVariables };
 /**
  * Security headers middleware using Hono's built-in implementation.
  *
- * Configured with:
- * - CSP with per-request nonce for scripts AND styles (via NONCE constant)
- * - Nonce + unsafe-inline fallback for styles (CSP3 browsers ignore unsafe-inline
- *   when nonce is present; older browsers use unsafe-inline as fallback)
- * - External fonts from Google Fonts and Fontshare
- * - Strict transport security, frame denial, referrer policy
- * - Permissions policy restricting camera, microphone, geolocation
+ * CSP Style Strategy (style-src-elem + style-src fallback):
+ * - style-src: NONCE + unsafe-inline — fallback for older browsers that
+ *   don't support style-src-elem. NONCE causes unsafe-inline to be ignored
+ *   in CSP2+ browsers, so this only affects legacy browsers.
+ * - style-src-elem: 'self' + 'unsafe-inline' (NO NONCE) — controls <style>
+ *   elements and CSSStyleSheet.insertRule(). Without NONCE, 'unsafe-inline'
+ *   is NOT ignored, allowing hono/css client-side runtime injection via
+ *   insertRule(). SSR <Style nonce={...}> tags still work because the nonce
+ *   is checked against style-src in browsers that don't support style-src-elem.
+ * - style-src-attr: 'unsafe-inline' — allows inline style="..." attributes
+ *   used by SSR loading placeholders.
+ *
+ * This follows MDN's recommended backwards-compatible pattern:
+ * https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/style-src-elem
  */
 export const securityHeaders = () =>
   honoSecureHeaders({
-    // Override defaults
     strictTransportSecurity: "max-age=63072000; includeSubDomains",
     xFrameOptions: "DENY",
     referrerPolicy: "strict-origin-when-cross-origin",
@@ -32,7 +38,8 @@ export const securityHeaders = () =>
       scriptSrc: [NONCE, "'strict-dynamic'"],
       scriptSrcElem: [NONCE, "'strict-dynamic'"],
       styleSrc: [NONCE, "'unsafe-inline'"],
-      styleSrcElem: [NONCE, "'unsafe-inline'", "'self'", "https:"],
+      styleSrcElem: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://api.fontshare.com"],
+      styleSrcAttr: ["'unsafe-inline'"],
       fontSrc: ["'self'", "https:", "data:"],
       imgSrc: ["'self'", "data:", "https:"],
       connectSrc: ["'self'", "https://auth.acdgbrasil.com.br"],

@@ -1,7 +1,7 @@
 // Admin Guard — RBAC middleware for admin/owner roles.
 // Runs AFTER authGuard (session already resolved).
 
-import type { MiddlewareHandler } from "@hono/hono";
+import { createMiddleware } from "@hono/hono/factory";
 import type { AppEnv } from "../types.ts";
 
 /** Roles that grant access to admin routes. */
@@ -13,14 +13,14 @@ const ADMIN_ROLES: ReadonlySet<string> = new Set<AdminRole>(["admin", "owner"]);
 const isApiPath = (path: string): boolean => path.startsWith("/api/");
 
 /**
- * Admin-guard middleware factory.
+ * Admin-guard middleware.
  * Checks `session.roles` for "admin" or "owner".
  *
  * - For `/api/admin/*`: returns 403 JSON.
  * - For `/admin/*` SSR: redirects to `/` (user IS authenticated, just not admin).
  */
-export const adminGuard = (): MiddlewareHandler<AppEnv> => {
-  return async (c, next) => {
+export const adminGuard = () =>
+  createMiddleware<AppEnv>(async (c, next) => {
     const session = c.get("session");
 
     const hasRole = session?.roles?.some((r) => ADMIN_ROLES.has(r)) ?? false;
@@ -33,5 +33,4 @@ export const adminGuard = (): MiddlewareHandler<AppEnv> => {
     }
 
     await next();
-  };
-};
+  });

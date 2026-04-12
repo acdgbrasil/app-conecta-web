@@ -1,4 +1,4 @@
-import type { MiddlewareHandler } from "@hono/hono";
+import { createMiddleware } from "@hono/hono/factory";
 import { getCookie, setCookie } from "@hono/hono/cookie";
 import type { AppEnv } from "../types.ts";
 
@@ -9,7 +9,12 @@ const CSRF_COOKIE = "__Host-csrf";
 const CSRF_HEADER = "x-csrf-token";
 
 /** Methods that require CSRF validation. */
-const MUTATING_METHODS = new Set(["POST", "PUT", "DELETE", "PATCH"]);
+const MUTATING_METHODS: ReadonlySet<string> = new Set([
+  "POST",
+  "PUT",
+  "DELETE",
+  "PATCH",
+]);
 
 /** Generates a random CSRF token (256-bit hex). */
 const generateCsrfToken = (): string => {
@@ -31,8 +36,8 @@ const generateCsrfToken = (): string => {
  * so CSRF cookie validation is only enforced on non-API mutating requests
  * (e.g., form submissions to /auth/logout).
  */
-export const csrf = (): MiddlewareHandler<AppEnv> => {
-  return async (c, next) => {
+export const csrf = () =>
+  createMiddleware<AppEnv>(async (c, next) => {
     const method = c.req.method;
 
     if (!MUTATING_METHODS.has(method)) {
@@ -67,5 +72,4 @@ export const csrf = (): MiddlewareHandler<AppEnv> => {
     }
 
     await next();
-  };
-};
+  });

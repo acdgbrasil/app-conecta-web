@@ -1,6 +1,6 @@
-import type { MiddlewareHandler } from "@hono/hono";
-import type { AppEnv } from "../types.ts";
+import { createMiddleware } from "@hono/hono/factory";
 import { getCookie } from "@hono/hono/cookie";
+import type { AppEnv } from "../types.ts";
 
 /** Cookie name for the opaque session ID. __Host- prefix requires Secure + Path=/ + no Domain. */
 export const SESSION_COOKIE_SECURE = "__Host-session";
@@ -21,10 +21,11 @@ const REFRESH_BUFFER_MS = 5 * 60 * 1000; // 5 minutes
  * a refresh token, both context values are set to `undefined`.
  * Redirection is NOT handled here — that is the responsibility of `authGuard`.
  */
-export const sessionMiddleware = (): MiddlewareHandler<AppEnv> => {
-  return async (c, next) => {
+export const sessionMiddleware = () =>
+  createMiddleware<AppEnv>(async (c, next) => {
     // Try secure cookie first, then dev cookie
-    const rawCookie = getCookie(c, SESSION_COOKIE_SECURE) ?? getCookie(c, SESSION_COOKIE_DEV);
+    const rawCookie = getCookie(c, SESSION_COOKIE_SECURE) ??
+      getCookie(c, SESSION_COOKIE_DEV);
     const sessionStore = c.get("sessionStore");
 
     // Verify HMAC signature and extract plain session ID
@@ -92,5 +93,4 @@ export const sessionMiddleware = (): MiddlewareHandler<AppEnv> => {
     }
 
     await next();
-  };
-};
+  });

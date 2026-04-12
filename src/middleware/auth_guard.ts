@@ -1,8 +1,13 @@
-import type { MiddlewareHandler } from "@hono/hono";
+import { createMiddleware } from "@hono/hono/factory";
 import type { AppEnv } from "../types.ts";
 
 /** Exact-match public paths (no prefix matching). */
-const PUBLIC_EXACT_PATHS: ReadonlySet<string> = new Set(["/health", "/ready", "/login", "/"]);
+const PUBLIC_EXACT_PATHS: ReadonlySet<string> = new Set([
+  "/health",
+  "/ready",
+  "/login",
+  "/",
+]);
 
 /** Prefix-match public paths (startsWith matching). */
 const PUBLIC_PREFIX_PATHS = ["/auth/", "/static/"] as const;
@@ -25,8 +30,8 @@ const isApiRequest = (path: string): boolean => path.startsWith("/api/");
  *   - Page requests receive a `302` redirect to `/auth/login`.
  * - If a valid session exists the request continues to the next handler.
  */
-export const authGuard = (): MiddlewareHandler<AppEnv> => {
-  return async (c, next) => {
+export const authGuard = () =>
+  createMiddleware<AppEnv>(async (c, next) => {
     const path = c.req.path;
 
     if (isPublicPath(path)) {
@@ -44,5 +49,4 @@ export const authGuard = (): MiddlewareHandler<AppEnv> => {
     }
 
     await next();
-  };
-};
+  });

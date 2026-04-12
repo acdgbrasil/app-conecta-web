@@ -1,4 +1,4 @@
-import type { MiddlewareHandler } from "@hono/hono";
+import { createMiddleware } from "@hono/hono/factory";
 import type { AppEnv } from "../types.ts";
 
 /**
@@ -13,8 +13,8 @@ import type { AppEnv } from "../types.ts";
  * Non-API routes pass through without checks.
  * Returns 403 on validation failure.
  */
-export const fetchMetadata = (): MiddlewareHandler<AppEnv> => {
-  return async (c, next) => {
+export const fetchMetadata = () =>
+  createMiddleware<AppEnv>(async (c, next) => {
     const path = c.req.path;
 
     // Only enforce on /api/* routes
@@ -39,5 +39,4 @@ export const fetchMetadata = (): MiddlewareHandler<AppEnv> => {
     }
 
     await next();
-  };
-};
+  });
