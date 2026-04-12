@@ -713,10 +713,36 @@ export const createAdminApiRoutes = (
 
     const rolesActive = extractTotal(rolesResult);
 
+    // Fetch pending lookup requests from social-care backend
+    let pendingCount = 0;
+    try {
+      const requestsResult = await remoteClient.fetch({
+        baseUrl: config.apiBaseUrl,
+        path: "/api/v1/dominios/requests",
+        method: "GET",
+        accessToken: session.accessToken,
+        actorId: session.userSub,
+      });
+      if (requestsResult.ok && requestsResult.value.body) {
+        const reqBody = requestsResult.value.body;
+        if (Array.isArray(reqBody)) {
+          pendingCount = reqBody.filter(
+            (item: Record<string, unknown>) =>
+              typeof item === "object" && item !== null && item.status === "pendente",
+          ).length;
+        }
+      }
+    } catch {
+      // Stats should not break if one sub-fetch fails — default to 0
+    }
+
     return c.json({
-      people: { total: peopleTotal },
-      roles: { active: rolesActive },
-      audit: { total: auditStore.count() },
+      data: {
+        totalPeople: peopleTotal,
+        activeRoles: rolesActive,
+        pendingRequests: pendingCount,
+        recentAuditCount: auditStore.count(),
+      },
     });
   });
 

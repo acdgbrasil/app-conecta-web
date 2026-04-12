@@ -320,12 +320,11 @@ Deno.test("admin routes - GET /api/admin/stats returns aggregated stats", async 
   assertEquals(res.status, 200);
   const body = await res.json();
 
-  assertExists(body.people, "Stats must include people section");
-  assertExists(body.people.total, "Stats must include people.total");
-  assertExists(body.roles, "Stats must include roles section");
-  assertExists(body.roles.active, "Stats must include roles.active");
-  assertExists(body.audit, "Stats must include audit section");
-  assertEquals(body.audit.total, 1, "Audit total should match store count");
+  assertExists(body.data, "Stats must include data wrapper");
+  assertEquals(typeof body.data.totalPeople, "number", "Stats must include totalPeople");
+  assertEquals(typeof body.data.activeRoles, "number", "Stats must include activeRoles");
+  assertEquals(typeof body.data.pendingRequests, "number", "Stats must include pendingRequests");
+  assertEquals(body.data.recentAuditCount, 1, "recentAuditCount should match store count");
 });
 
 // =============================================================================
