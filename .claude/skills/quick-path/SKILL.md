@@ -71,7 +71,7 @@ Short clarification. Max 3 questions. No CONTEXT.md file — just conversation.
 ### 4. Test (if --test)
 
 - Write or update tests following project conventions (Deno.test + @std/assert)
-- Run tests: `deno test tests/` to verify zero regressions
+- Run tests: `deno task test` to verify zero regressions
 - If tests fail, fix and re-run (max 3 attempts)
 
 ### 5. Verify (always)
@@ -79,7 +79,7 @@ Short clarification. Max 3 questions. No CONTEXT.md file — just conversation.
 Minimal verification checklist:
 - [ ] `deno check` passes (type check)
 - [ ] `deno lint` passes
-- [ ] `deno test tests/` passes (zero regressions)
+- [ ] `deno task test` passes (zero regressions)
 - [ ] Change follows CLAUDE.md rules for the affected layer
 
 ### 6. Review (if --review)

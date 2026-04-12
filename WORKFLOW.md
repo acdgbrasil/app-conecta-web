@@ -371,7 +371,7 @@ Antes de qualquer merge para main, TODOS os gates devem passar:
 ```
 1. deno check src/**/*.ts src/**/*.tsx    ← type check
 2. deno lint                               ← linting
-3. deno test tests/                        ← TODOS os testes
+3. deno task test                        ← TODOS os testes
 4. deno task build                         ← bundles compilam
 ```
 
@@ -383,7 +383,7 @@ Antes de qualquer merge para main, TODOS os gates devem passar:
 
 O hook `.githooks/pre-push` roda automaticamente:
 - Bloqueia push direto para main/master
-- Roda `deno test tests/` antes de permitir push
+- Roda `deno task test` antes de permitir push
 - Se testes falham, push e bloqueado
 
 **IMPORTANTE**: hooks locais sao conveniencia. A CI e a garantia real.
@@ -407,7 +407,7 @@ O hook `.githooks/pre-push` roda automaticamente:
 
 ### O que fazer quando testes quebram
 
-1. `deno test tests/` — identificar quais testes falharam
+1. `deno task test` — identificar quais testes falharam
 2. Ler o teste que falhou — entender o que ele espera
 3. Verificar se o teste esta correto (talvez o teste precise atualizar)
 4. Corrigir o codigo OU o teste — nunca deletar teste para "resolver"
@@ -475,7 +475,7 @@ O Claude DEVE seguir estas regras ao receber uma tarefa:
 ### Checklist Pre-Commit (Claude DEVE verificar)
 
 - [ ] `deno check src/**/*.ts src/**/*.tsx` passa
-- [ ] `deno test tests/` passa (zero regressoes)
+- [ ] `deno task test` passa (zero regressoes)
 - [ ] `deno task build` compila
 - [ ] Diff tem <= 400 linhas
 - [ ] Commit toca apenas 1 camada

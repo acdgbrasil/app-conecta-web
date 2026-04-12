@@ -116,7 +116,7 @@ git checkout main && git pull origin main
 git checkout -b feat/minha-feature
 
 # Implementar seguindo /pipeline-maestro ou /quick-path
-# deno test tests/ — testes passando
+# deno task test — testes passando
 # deno task build — bundles compilando
 
 git push origin feat/minha-feature
@@ -147,7 +147,7 @@ docker compose up --build
 # http://localhost:8081
 
 # 6. Antes de push
-deno test tests/      # testes
+deno task test      # testes
 deno task build       # bundles
 ```
 

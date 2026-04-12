@@ -23,7 +23,7 @@ These rules are enforced by git hooks and Claude Code hooks. Violation is blocke
 - **Config-first rule:** Changes to shared files (deno.json, Dockerfile, server.ts, types.ts) go in a SEPARATE PR that merges BEFORE the feature code
 
 ### Before Committing
-- Run `deno test tests/` to verify zero regressions
+- Run `deno task test` to verify zero regressions
 - Run `deno task build` to verify client bundles compile
 - The pre-push hook runs tests automatically — if they fail, push is blocked
 - **NEVER delete a test to make the build pass**
@@ -37,7 +37,7 @@ When working on any task, Claude MUST:
 1. **List files that will be touched BEFORE starting work**
 2. **If > 10 files or > 2 layers** → break into sub-tasks, ask user
 3. **Never modify shared files** (deno.json, server.ts, etc.) together with feature code — separate PR
-4. **Run `deno test tests/` BEFORE committing** — zero regressions
+4. **Run `deno task test` BEFORE committing** — zero regressions
 5. **Run `deno task build` BEFORE committing** — bundles compile
 6. **STOP and ask** if tests are failing and root cause is unclear
 7. **NEVER dismiss failing tests** — if ANY test fails, it is a REGRESSION. Never say "pre-existing", "not caused by my changes", or "static tests". Always alert the user: "REGRESSAO: X testes falhando. Blocker para merge." Then either fix them or create an issue.
@@ -71,7 +71,7 @@ deno task build
 docker compose up --build
 
 # 4. Run tests before pushing
-deno test tests/
+deno task test
 ```
 
 ---

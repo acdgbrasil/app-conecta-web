@@ -21,7 +21,7 @@ fi
 echo "🧪 Rodando testes antes do push..."
 echo ""
 
-deno test tests/domain/ tests/application/ tests/adapters/ tests/middleware/ tests/routes/ tests/client/ 2>&1
+deno task test 2>&1
 
 if [ $? -ne 0 ]; then
   echo ""
