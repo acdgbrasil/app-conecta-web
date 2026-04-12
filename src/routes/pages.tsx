@@ -7,6 +7,7 @@ import { FamilyView } from "../views/pages/family-view.tsx";
 import { LoginView } from "../views/pages/login-view.tsx";
 import { LandingView } from "../views/pages/landing-view.tsx";
 import { HubView } from "../views/pages/hub-view.tsx";
+import { AdminView } from "../views/pages/admin-view.tsx";
 
 export const pageRoutes = new Hono<AppEnv>();
 
@@ -69,6 +70,16 @@ pageRoutes.get("/family-composition/:patientId", (c) => {
   return c.html(
     <AppLayout title="Composicao Familiar" nonce={nonce} scripts={["/static/js/family-composition.js"]}>
       <FamilyView patientId={patientId} />
+    </AppLayout>
+  );
+});
+
+// Admin Hub — requires admin role (enforced by adminGuard in server.ts)
+pageRoutes.get("/admin", (c) => {
+  const nonce = c.get("secureHeadersNonce");
+  return c.html(
+    <AppLayout title="Admin Hub" nonce={nonce} scripts={["/static/js/admin-hub.js"]}>
+      <AdminView />
     </AppLayout>
   );
 });
