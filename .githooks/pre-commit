@@ -33,7 +33,7 @@ if echo "$STAGED_FILES" | grep -qE '\.env$|\.env\.local|\.env\.production|\.env\
 fi
 
 # ── Enforce branch naming convention ────────────────────────────────────────
-if ! echo "$BRANCH" | grep -qE '^(feat|fix|ui|chore|docs|refactor|test)/'; then
+if ! echo "$BRANCH" | grep -qE '^(feat|fix|ui|proto|chore|docs|refactor|test)/'; then
   echo ""
   echo "⚠️  Branch '$BRANCH' não segue a convenção."
   echo "   Use: feat/, fix/, ui/, chore/, docs/, refactor/, test/"
@@ -44,17 +44,17 @@ fi
 
 # ── Enforce scope for ui/* branches (designer) ─────────────────────────────
 if echo "$BRANCH" | grep -qE '^ui/'; then
-  ALLOWED_PATTERN='^src/client/views/|^src/client/styles/|^src/views/|^static/'
-  FORBIDDEN_FILES=$(echo "$STAGED_FILES" | grep -vE "$ALLOWED_PATTERN" | grep -vE '^\s*$')
+  ALLOWED_PATTERN='^src/client/views/|^src/client/styles/|^src/views/|^static/|^prototypes/'
+  FORBIDDEN_FILES=$(echo "$STAGED_FILES" | grep -vE "$ALLOWED_PATTERN" | grep -vE '^[[:space:]]*$')
 
   if [ -n "$FORBIDDEN_FILES" ]; then
     echo ""
     echo "╔══════════════════════════════════════════════════════════╗"
-    echo "║  ❌  BLOQUEADO: Branch ui/* só pode modificar views/    ║"
+    echo "║  ❌  BLOQUEADO: Branch ui/* — escopo restrito            ║"
     echo "║                                                          ║"
     echo "║  Arquivos permitidos:                                    ║"
     echo "║    src/client/views/   src/client/styles/                ║"
-    echo "║    src/views/          static/                           ║"
+    echo "║    src/views/          static/       prototypes/         ║"
     echo "║                                                          ║"
     echo "║  Arquivos fora do escopo:                                ║"
     echo "$FORBIDDEN_FILES" | while read -r f; do echo "║    $f"; done
@@ -64,6 +64,42 @@ if echo "$BRANCH" | grep -qE '^ui/'; then
     echo ""
     exit 1
   fi
+fi
+
+# ── Enforce scope for proto/* branches (prototypes only) ───────────────────
+if echo "$BRANCH" | grep -qE '^proto/'; then
+  ALLOWED_PATTERN='^prototypes/'
+  FORBIDDEN_FILES=$(echo "$STAGED_FILES" | grep -vE "$ALLOWED_PATTERN" | grep -vE '^[[:space:]]*$')
+
+  if [ -n "$FORBIDDEN_FILES" ]; then
+    echo ""
+    echo "╔══════════════════════════════════════════════════════════╗"
+    echo "║  ❌  BLOQUEADO: Branch proto/* — apenas prototypes/      ║"
+    echo "║                                                          ║"
+    echo "║  Coloque prototipos HTML em: prototypes/                 ║"
+    echo "║  Nunca na raiz do projeto.                               ║"
+    echo "║                                                          ║"
+    echo "║  Arquivos fora do escopo:                                ║"
+    echo "$FORBIDDEN_FILES" | while read -r f; do echo "║    $f"; done
+    echo "║                                                          ║"
+    echo "║  Para implementar em hono/jsx, use branch ui/*           ║"
+    echo "╚══════════════════════════════════════════════════════════╝"
+    echo ""
+    exit 1
+  fi
+fi
+
+# ── Block prototype HTML files in project root ─────────────────────────────
+ROOT_PROTOTYPES=$(echo "$STAGED_FILES" | grep -E '^prototype-.*\.html$' | grep -vE '^[[:space:]]*$')
+if [ -n "$ROOT_PROTOTYPES" ]; then
+  echo ""
+  echo "⚠️  Prototipos HTML detectados na RAIZ do projeto:"
+  echo "$ROOT_PROTOTYPES" | while read -r f; do echo "   $f"; done
+  echo ""
+  echo "   Mova para prototypes/ — ex: prototypes/home-redesign.html"
+  echo "   E crie o template de intencoes: prototypes/home-redesign.md"
+  echo ""
+  exit 1
 fi
 
 exit 0

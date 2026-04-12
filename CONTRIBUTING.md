@@ -1,27 +1,28 @@
 # Contributing — app-conecta-web (ACDG)
 
+> **Workflow completo e detalhado em WORKFLOW.md** — este arquivo e o resumo.
+
 ## Perfis de Contribuidor
 
-Este projeto tem dois perfis com escopos distintos:
-
-| Perfil | Responsabilidades | Branch prefix |
-|--------|-------------------|---------------|
-| **Dev** | Server-side, seguranca, estados, reatividade, domain, application, middleware, testes | `feat/`, `fix/`, `refactor/`, `test/` |
-| **Designer** | UI/UX, visual, componentes, estilos, copy, acessibilidade | `ui/` |
+| Perfil | Pessoa | Responsabilidades | Branch prefix |
+|--------|--------|-------------------|---------------|
+| **Dev** | Gabriel (@gabriel-aderaldo) | Server-side, seguranca, estados, domain, application, middleware, testes | `feat/`, `fix/`, `refactor/`, `test/` |
+| **Designer** | Davi (@DaviFranklin) | Prototipos, UI/UX, visual, componentes, estilos, acessibilidade | `proto/`, `ui/`, `docs/` |
 
 ---
 
-## Gitflow
+## Gitflow (Trunk-Based)
 
 ```
-main (protegida — so via PR)
+main (protegida — so via PR, squash merge)
   |
-  ├── feat/nome-da-feature       Dev: features novas (qualquer camada)
-  ├── fix/nome-do-bug            Dev: bug fixes (qualquer camada)
+  ├── feat/nome-da-feature       Dev: features novas
+  ├── fix/nome-do-bug            Dev: bug fixes
   ├── refactor/nome              Dev: refatoracoes
   ├── test/nome                  Dev: testes
   |
-  ├── ui/nome-da-melhoria        Designer: visual, componentes, estilos
+  ├── proto/nome-do-prototipo    Designer: prototipos HTML/CSS puros
+  ├── ui/nome-da-melhoria        Designer: implementacao visual em hono/jsx
   |
   ├── chore/nome                 Ambos: config, docs, CI
   └── docs/nome                  Ambos: documentacao
@@ -30,77 +31,97 @@ main (protegida — so via PR)
 ### Regras
 
 1. **NUNCA commitar direto na `main`** — sempre via Pull Request
-2. **NUNCA force push** (`git push --force` e bloqueado por hooks)
-3. **Testes devem passar** antes de merge (pre-push hook roda automaticamente)
-4. **Kodus AI** revisa automaticamente todos os PRs (qualidade, seguranca, performance)
+2. **NUNCA force push** (`git push --force` nao e permitido)
+3. **NUNCA criar PRs empilhadas** — toda PR tem base em `main`
+4. **Testes devem passar** na CI antes de merge
+5. **Max 400 linhas de diff por PR** — se maior, quebre em PRs menores
+6. **Config-first** — mudancas em deno.json, Dockerfile, server.ts vao em PR separada
+7. **Kodus AI** revisa automaticamente todos os PRs
 
 ---
 
-## Escopo por Perfil
-
-### Dev (`feat/`, `fix/`, `refactor/`, `test/`)
-
-Pode modificar **qualquer arquivo** do projeto:
+## Jornada de uma Feature
 
 ```
-src/domain/          — Value Objects, entities, aggregates
-src/application/     — Use cases, ports, validation
-src/adapters/        — Auth, remote client, config
-src/middleware/       — Security headers, session, CSRF, fetch metadata, auth guard
-src/routes/          — Health, auth, API proxy, SSR pages
-src/server.ts        — Entrypoint
-src/types.ts         — AppState types
-src/client/          — ViewModels, services, views, styles, apps
-tests/               — Todos os testes
+proto/ → docs/ → feat/(server) → feat/(client) → ui/(visual) → fix/(polish)
 ```
 
-**Workflow:**
-1. `git checkout -b feat/minha-feature`
-2. Implementar seguindo o `/pipeline-maestro`
-3. `deno task test` — testes passando
-4. `deno task build` — bundles compilando
-5. `git push origin feat/minha-feature`
-6. Abrir PR para `main` — Kodus AI revisa automaticamente
-7. Merge apos CI verde
+Cada fase e uma branch/PR separada. Ver WORKFLOW.md para detalhes completos.
 
-### Designer (`ui/`)
+---
 
-Pode modificar **APENAS** estes arquivos:
+## Workflow do Designer (Davi)
 
-```
-src/client/views/     — Pages e Components (hono/jsx/dom)
-src/client/styles/    — Tokens e estilos (hono/css)
-src/views/            — SSR layouts e pages (hono/jsx)
-static/               — CSS, imagens, assets
-```
+### 1. Prototipo (branch proto/*)
 
-**NAO pode modificar:**
-```
-src/domain/           ❌
-src/application/      ❌
-src/adapters/         ❌
-src/middleware/        ❌
-src/routes/           ❌
-src/server.ts         ❌
-src/types.ts          ❌
-src/client/viewmodels/ ❌ (pedir ao dev)
-src/client/services/   ❌ (pedir ao dev)
-src/client/apps/       ❌ (pedir ao dev)
-tests/                 ❌ (exceto testes de view)
+```bash
+git checkout main && git pull origin main
+git checkout -b proto/redesign-home
+
+# Copie o template e preencha:
+cp prototypes/TEMPLATE.md prototypes/redesign-home.md
+
+# Crie o prototipo HTML em prototypes/
+# Rode /design-critique e /accessibility-review no Claude Code
+# Corrija findings antes de commitar
+
+git add prototypes/
+git commit -m "proto: home page redesign"
+git push origin proto/redesign-home
+# Abrir PR
 ```
 
-**Workflow:**
-1. `git checkout -b ui/minha-melhoria`
-2. Modificar APENAS views/styles/static
-3. Usar tokens de `src/client/styles/tokens.ts` (nunca hardcode hex)
-4. Importar de `hono/jsx/dom` (client) ou `hono/jsx` (SSR)
-5. `deno task test` — testes passando
-6. `deno task build` — bundles compilando
-7. `git push origin ui/minha-melhoria`
-8. Abrir PR para `main` — **Gabriel DEVE revisar antes de merge**
-9. Kodus AI revisa automaticamente em paralelo
+### 2. Spec (branch docs/*)
 
-**Se precisar de um novo endpoint, campo de dados, ou viewmodel:** pedir ao dev.
+```bash
+git checkout main && git pull origin main
+git checkout -b docs/spec-home-redesign
+
+# No Claude Code: /design-to-spec
+git add .claude/skills/view-expert/references/features/
+git commit -m "docs(design): spec do redesign home"
+git push origin docs/spec-home-redesign
+```
+
+### 3. Implementacao Visual (branch ui/*)
+
+```bash
+git checkout main && git pull origin main  # main ja tem viewmodel + service
+git checkout -b ui/home-redesign
+
+# Modifique APENAS: src/client/views/, src/client/styles/, src/views/, static/
+# Rode /design-critique e /accessibility-review antes de commitar
+
+git add src/client/views/ src/client/styles/
+git commit -m "ui(home): implement home page components"
+git push origin ui/home-redesign
+```
+
+### O que voce NAO pode mexer
+
+```
+src/domain/ src/application/ src/adapters/ src/middleware/
+src/routes/ src/server.ts src/types.ts
+src/client/viewmodels/ src/client/services/ src/client/apps/
+deno.json Dockerfile CLAUDE.md
+→ Pedir ao Gabriel
+```
+
+---
+
+## Workflow do Dev (Gabriel)
+
+```bash
+git checkout main && git pull origin main
+git checkout -b feat/minha-feature
+
+# Implementar seguindo /pipeline-maestro ou /quick-path
+# deno test tests/ — testes passando
+# deno task build — bundles compilando
+
+git push origin feat/minha-feature
+# Abrir PR — Kodus AI revisa automaticamente
+```
 
 ---
 
@@ -115,8 +136,8 @@ cd app-conecta-web
 git config core.hooksPath .githooks
 
 # 3. Criar sua branch
-git checkout -b ui/minha-feature    # designer
-git checkout -b feat/minha-feature  # dev
+git checkout -b proto/meu-prototipo   # designer
+git checkout -b feat/minha-feature    # dev
 
 # 4. Build e rodar
 deno task build
@@ -126,8 +147,8 @@ docker compose up --build
 # http://localhost:8081
 
 # 6. Antes de push
-deno task test       # testes
-deno task build      # bundles
+deno test tests/      # testes
+deno task build       # bundles
 ```
 
 ---
@@ -139,55 +160,35 @@ deno task build      # bundles
 ```
 feat:      nova feature
 fix:       bug fix
+proto:     prototipo de design (HTML/CSS puro)
+ui:        implementacao visual (hono/jsx)
 chore:     config, deps, CI
 docs:      documentacao
 refactor:  refatoracao sem mudanca de comportamento
 test:      adicionar/corrigir testes
 ```
 
-### Branch naming
-
-```
-feat/descricao-curta
-fix/descricao-curta
-ui/descricao-curta
-chore/descricao-curta
-docs/descricao-curta
-refactor/descricao-curta
-test/descricao-curta
-```
-
 ### CSS / Estilos
 
 - Usar **APENAS** `hono/css` com tokens de `src/client/styles/tokens.ts`
 - **NUNCA** usar Tailwind, styled-components, ou inline styles com valores hardcoded
-- Usar `alpha()` helper para cores com transparencia
 - CSP nonce via `<Style nonce={nonce} />`
 
 ### Acessibilidade
 
 - Contraste minimo 4.5:1 para texto (WCAG AA)
-- Touch targets minimo 48px (WCAG 2.5.5)
+- Touch targets minimo 44px (WCAG 2.5.5)
 - `aria-label` em elementos interativos
-- `aria-hidden="true"` em elementos decorativos
 - `prefers-reduced-motion` respeitado em animacoes
+- Rodar `/accessibility-review` antes de abrir PR
 
 ---
 
-## Review com Kodus AI
+## Review
 
-Todos os PRs sao automaticamente revisados pela [Kodus AI](https://kodus.io). Ela analisa:
+Todos os PRs sao revisados automaticamente:
+- **Kodus AI** — qualidade, seguranca, performance, aderencia aos padroes
+- **Design skills** — `/design-critique` e `/accessibility-review` (Davi roda antes de abrir PR)
+- **Gabriel** — review manual quando necessario (nao para visual)
 
-- Qualidade de codigo
-- Seguranca (vulnerabilidades, leaks)
-- Performance (patterns problematicos)
-- Aderencia aos padroes do projeto (detecta regras do CLAUDE.md)
-
-Findings aparecem como comentarios inline no PR. Corrigir antes de merge.
-
----
-
-## CODEOWNERS
-
-O arquivo `.github/CODEOWNERS` define quem e responsavel por cada area.
-PRs que tocam areas de outro owner notificam automaticamente o responsavel.
+Findings criticos bloqueiam merge. Corrigir antes de aprovar.

@@ -6,7 +6,27 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node -e \"const cmd = process.env.CLAUDE_TOOL_INPUT; if (!cmd) process.exit(0); const parsed = JSON.parse(cmd); const c = parsed.command || ''; if (/git\\s+(push|commit)/.test(c)) { const branch = require('child_process').execSync('git symbolic-ref --short HEAD 2>/dev/null').toString().trim(); if (branch === 'main' || branch === 'master') { console.log('BLOQUEADO: Não é permitido commit/push direto na main. Crie uma branch primeiro: git checkout -b ui/minha-feature'); process.exit(1); } } if (/git\\s+push.*--force/.test(c)) { console.log('BLOQUEADO: Force push não é permitido.'); process.exit(1); } if (/git\\s+reset\\s+--hard/.test(c)) { console.log('BLOQUEADO: git reset --hard não é permitido. Use git stash ou git checkout.'); process.exit(1); }\""
+            "command": "node -e \"const cmd = process.env.CLAUDE_TOOL_INPUT; if (!cmd) process.exit(0); const parsed = JSON.parse(cmd); const c = parsed.command || ''; if (/git\\s+(push|commit)/.test(c)) { const branch = require('child_process').execSync('git symbolic-ref --short HEAD 2>/dev/null').toString().trim(); if (branch === 'main' || branch === 'master') { console.log('BLOQUEADO: Nao e permitido commit/push direto na main. Crie uma branch primeiro.'); process.exit(1); } } if (/git\\s+push.*--force/.test(c)) { console.log('BLOQUEADO: Force push nao e permitido.'); process.exit(1); } if (/git\\s+reset\\s+--hard/.test(c)) { console.log('BLOQUEADO: git reset --hard nao e permitido. Use git stash ou git checkout.'); process.exit(1); } if (/<<'?EOF'?|<<\\s*EOF|cat\\s*<</.test(c)) { console.log('BLOQUEADO: Heredoc nao e permitido em Bash tool calls. Use string entre aspas.'); process.exit(1); }\""
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const input = process.env.CLAUDE_TOOL_INPUT; if (!input) process.exit(0); const parsed = JSON.parse(input); const fp = parsed.file_path || ''; const branch = require('child_process').execSync('git symbolic-ref --short HEAD 2>/dev/null').toString().trim(); if (branch.startsWith('ui/')) { const allowed = ['/src/client/views/', '/src/client/styles/', '/src/views/', '/static/', '/prototypes/']; if (!allowed.some(a => fp.includes(a))) { console.log('BLOQUEADO: Branch ui/* so pode modificar views, styles, static e prototypes. Arquivo: ' + fp); process.exit(1); } } if (branch.startsWith('proto/')) { if (!fp.includes('/prototypes/')) { console.log('BLOQUEADO: Branch proto/* so pode modificar arquivos em prototypes/. Arquivo: ' + fp); process.exit(1); } }\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const cmd = process.env.CLAUDE_TOOL_INPUT; if (!cmd) process.exit(0); const parsed = JSON.parse(cmd); const c = parsed.command || ''; if (/git\\s+commit/.test(c)) { try { const stat = require('child_process').execSync('git diff HEAD~1 --stat --format= 2>/dev/null').toString(); const files = stat.trim().split('\\n').filter(l => l.trim()).length; if (files > 10) { console.log('ALERTA: Commit com ' + files + ' arquivos (max recomendado: 10). Considere quebrar em commits menores. Ver WORKFLOW.md'); } } catch(e) {} }\""
           }
         ]
       }

@@ -7,27 +7,51 @@
 ## Contributor Safety Rules (MANDATORY for ALL contributors)
 
 These rules are enforced by git hooks and Claude Code hooks. Violation is blocked automatically.
+**Full workflow details in WORKFLOW.md** — this section is the summary.
 
-### Git Workflow
+### Git Workflow (Trunk-Based Development)
 - **NEVER commit directly to `main`** — Always create a branch first
 - **NEVER force push** (`git push --force` is blocked)
 - **NEVER `git reset --hard`** — Use `git stash` or `git checkout` instead
-- **Branch naming:** `feat/`, `fix/`, `ui/`, `chore/`, `docs/`, `refactor/`, `test/`
-- **For UI/UX work:** Use `ui/` prefix (e.g., `ui/melhorar-home-page`)
+- **NEVER create stacked/chained PRs** — Every PR has base in `main`
+- **Branch naming:** `feat/`, `fix/`, `ui/`, `proto/`, `chore/`, `docs/`, `refactor/`, `test/`
+- **For UI/UX implementation:** Use `ui/` prefix (e.g., `ui/melhorar-home-page`)
+- **For design prototypes:** Use `proto/` prefix (e.g., `proto/redesign-home`)
 - **Merge to main via Pull Request only** — PR triggers test verification
+- **Max 400 lines of diff per PR** — If larger, break into smaller PRs
+- **Max 10 files per commit** — If larger, break into atomic commits
+- **Config-first rule:** Changes to shared files (deno.json, Dockerfile, server.ts, types.ts) go in a SEPARATE PR that merges BEFORE the feature code
 
 ### Before Committing
 - Run `deno test tests/` to verify zero regressions
 - Run `deno task build` to verify client bundles compile
 - The pre-push hook runs tests automatically — if they fail, push is blocked
+- **NEVER delete a test to make the build pass**
+- **NEVER merge with failing tests**
 
 ### Claude Code Hooks (Maestro plugin)
 - **NEVER use heredoc** (`<<'EOF'`, `<<EOF`, `cat <<EOF`) inside Bash tool calls — a `PreToolUse:Bash` hook blocks it because heredocs corrupt structured content. For multi-line git commit messages, pass the message directly as a quoted string with literal newlines.
 
-### UI/UX Contributors — Scope Restrictions
-- **ONLY modify files under:** `src/client/views/`, `src/client/styles/`, `src/views/`, `static/`
+### Claude Code — Automatic Workflow Enforcement
+When working on any task, Claude MUST:
+1. **List files that will be touched BEFORE starting work**
+2. **If > 10 files or > 2 layers** → break into sub-tasks, ask user
+3. **Never modify shared files** (deno.json, server.ts, etc.) together with feature code — separate PR
+4. **Run `deno test tests/` BEFORE committing** — zero regressions
+5. **Run `deno task build` BEFORE committing** — bundles compile
+6. **STOP and ask** if tests are failing and root cause is unclear
+7. **NEVER dismiss failing tests** — if ANY test fails, it is a REGRESSION. Never say "pre-existing", "not caused by my changes", or "static tests". Always alert the user: "REGRESSAO: X testes falhando. Blocker para merge." Then either fix them or create an issue.
+
+### UI/UX Contributors (Davi) — Scope Restrictions
+- **ONLY modify files under:** `src/client/views/`, `src/client/styles/`, `src/views/`, `static/`, `prototypes/`
 - **DO NOT modify:** `src/domain/`, `src/application/`, `src/adapters/`, `src/middleware/`, `src/routes/`, `src/server.ts`, `src/types.ts`
 - **DO NOT modify test files** unless adding new view tests
+
+### Prototype Workflow (proto/* branches)
+- Prototypes live in `prototypes/` directory (NEVER in project root)
+- Every prototype MUST have a companion `.md` from `prototypes/TEMPLATE.md`
+- Before opening PR, prototype MUST be reviewed by running `/design-critique` and `/accessibility-review`
+- The template captures: what's non-negotiable, what fails review, tokens/colors, interactions, notes for dev
 - **Styling:** Use ONLY `hono/css` with tokens from `src/client/styles/tokens.ts`. NO Tailwind, NO inline styles with hardcoded values
 - **Components:** Follow view-expert skill in `.claude/skills/view-expert/SKILL.md`
 - **If you need a new API endpoint or data field:** Ask the backend developer, don't modify server code
