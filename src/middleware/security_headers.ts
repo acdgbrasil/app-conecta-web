@@ -33,7 +33,7 @@ export const securityHeaders = () =>
       defaultSrc: ["'self'"],
       scriptSrc: [NONCE, "'strict-dynamic'"],
       scriptSrcElem: [NONCE, "'strict-dynamic'"],
-      styleSrc: [NONCE, "'unsafe-inline'"],
+      styleSrc: [NONCE, "'unsafe-inline'", "'self'", "https://fonts.googleapis.com", "https://api.fontshare.com"],
       styleSrcElem: [NONCE, "'unsafe-inline'", "'self'", "https://fonts.googleapis.com", "https://api.fontshare.com"],
       styleSrcAttr: ["'unsafe-inline'"],
       fontSrc: ["'self'", "https:", "data:"],
