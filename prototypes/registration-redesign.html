@@ -1,0 +1,2496 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Conecta — Cadastro Redesign Prototype</title>
+<style>
+@import url('https://api.fontshare.com/v2/css?f[]=erode@400,500,600,700&f[]=satoshi@400,500,600,700&display=swap');
+
+/* ===================================================================
+   DESIGN TOKENS — Sage Garden
+   =================================================================== */
+:root {
+  --bg-base: #F8F3EC;
+  --bg-warm: #F0E8DC;
+  --bg-sage: #E2E8DF;
+  --bg-sage-deep: #D4DDD0;
+  --bg-card: rgba(255,255,255,0.45);
+  --bg-card-hover: rgba(255,255,255,0.65);
+  --bg-card-border: rgba(255,255,255,0.6);
+  --bg-card-border-hover: rgba(79,132,72,0.2);
+
+  --text-primary: #1E2B1A;
+  --text-secondary: #3D5235;
+  --text-muted: #6B7F65;
+  --text-soft: #8B9E85;
+
+  --green-primary: #4F8448;
+  --green-dark: #3D6A37;
+  --green-light: rgba(79,132,72,0.08);
+
+  --danger: #C4422B;
+  --danger-light: rgba(196,66,43,0.08);
+
+  --sidebar-width: 64px;
+
+  --font-display: 'Erode', Georgia, serif;
+  --font-body: 'Satoshi', system-ui, -apple-system, sans-serif;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px;
+  --s6: 32px; --s7: 40px; --s8: 48px; --s9: 64px; --s10: 80px;
+
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+  --r-pill: 100px;
+
+  --line: rgba(79,132,72,0.08);
+  --line-hover: rgba(79,132,72,0.15);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+::selection { background: var(--green-primary); color: #fff; }
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(79,132,72,0.2); border-radius: 3px; }
+
+/* ===================================================================
+   FIXED BACKGROUND — gradient + blobs
+   =================================================================== */
+.bg-gradient {
+  position: fixed; inset: 0; z-index: 0;
+  background: linear-gradient(155deg, var(--bg-base) 0%, var(--bg-warm) 25%, var(--bg-sage) 55%, var(--bg-sage-deep) 100%);
+}
+.bg-blob-1 {
+  position: fixed; top: -10%; right: 5%; width: 450px; height: 450px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(79,132,72,0.06) 0%, transparent 70%); z-index: 0;
+}
+.bg-blob-2 {
+  position: fixed; bottom: -15%; left: 10%; width: 500px; height: 500px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(180,160,100,0.04) 0%, transparent 70%); z-index: 0;
+}
+
+/* ===================================================================
+   LAYOUT
+   =================================================================== */
+.app { position: relative; z-index: 1; display: flex; min-height: 100vh; }
+
+/* ===================================================================
+   SIDEBAR — 64px icon bar, expands to 220px on hover
+   =================================================================== */
+.sidebar {
+  position: fixed; left: 0; top: 0; bottom: 0;
+  width: var(--sidebar-width);
+  background: rgba(255,255,255,0.3);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(79,132,72,0.08);
+  display: flex; flex-direction: column; align-items: center;
+  padding: 20px 0; z-index: 40;
+  transition: width var(--duration-normal) var(--ease-out);
+  overflow: hidden;
+}
+.sidebar:hover { width: 220px; }
+
+.sidebar-logo {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--green-primary), var(--green-dark));
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-family: var(--font-display); font-size: 16px; font-weight: 700;
+  margin-bottom: 8px; flex-shrink: 0;
+}
+.sidebar-brand {
+  font-family: var(--font-display); font-size: 14px; color: var(--text-secondary); font-weight: 600;
+  white-space: nowrap; opacity: 0; transform: translateX(-8px);
+  transition: all var(--duration-normal) var(--ease-out); margin-bottom: 32px;
+}
+.sidebar:hover .sidebar-brand { opacity: 1; transform: translateX(0); }
+
+.sidebar-nav { display: flex; flex-direction: column; gap: 4px; width: 100%; padding: 0 12px; }
+.sidebar-item {
+  display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+  border-radius: var(--r-sm); cursor: pointer;
+  transition: all var(--duration-fast) ease; text-decoration: none;
+  color: var(--text-muted); white-space: nowrap;
+}
+.sidebar-item:hover { background: var(--green-light); color: var(--text-secondary); }
+.sidebar-item.active { background: var(--green-light); color: var(--green-primary); }
+.sidebar-icon {
+  width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 16px;
+}
+.sidebar-label {
+  font-size: 13px; font-weight: 500; opacity: 0; transform: translateX(-8px);
+  transition: all var(--duration-normal) var(--ease-out);
+}
+.sidebar:hover .sidebar-label { opacity: 1; transform: translateX(0); }
+.sidebar-badge {
+  margin-left: auto; font-size: 11px; font-weight: 600;
+  background: var(--green-light); color: var(--green-primary);
+  padding: 2px 8px; border-radius: var(--r-pill);
+  opacity: 0; transition: opacity var(--duration-normal) var(--ease-out);
+}
+.sidebar:hover .sidebar-badge { opacity: 1; }
+
+.sidebar-footer { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 0 12px; width: 100%; }
+.sidebar-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--bg-sage), var(--bg-sage-deep));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; color: var(--green-dark); flex-shrink: 0;
+}
+.sidebar-username {
+  font-size: 12px; color: var(--text-muted); white-space: nowrap;
+  opacity: 0; transition: opacity var(--duration-normal) var(--ease-out);
+}
+.sidebar:hover .sidebar-username { opacity: 1; }
+
+/* ===================================================================
+   MAIN WIZARD AREA
+   =================================================================== */
+.main-content {
+  margin-left: var(--sidebar-width);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 32px;
+  overflow-y: auto;
+  min-height: 100vh;
+}
+
+.wizard-container {
+  width: 100%;
+  max-width: 720px;
+}
+
+/* ===================================================================
+   TOP BAR — back link + step indicator
+   =================================================================== */
+.wizard-topbar {
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+.back-link {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--text-muted); text-decoration: none;
+  transition: color var(--duration-fast) ease; cursor: pointer;
+}
+.back-link:hover { color: var(--text-secondary); }
+
+/* ===================================================================
+   STEPPER — progress bar + dots
+   =================================================================== */
+.stepper {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: var(--s7);
+  width: 100%;
+  max-width: 720px;
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 3px;
+  background: rgba(79,132,72,0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--green-primary), var(--green-dark));
+  border-radius: 2px;
+  transition: width 0.6s var(--ease-out);
+}
+
+.progress-steps {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all var(--duration-fast) ease;
+}
+
+.step-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: rgba(79,132,72,0.15);
+  border: 2px solid transparent;
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+.step-dot.completed {
+  background: var(--green-primary);
+  box-shadow: 0 0 0 3px rgba(79,132,72,0.1);
+}
+
+.step-dot.current {
+  background: #fff;
+  border-color: var(--green-primary);
+  box-shadow: 0 0 0 3px rgba(79,132,72,0.12);
+}
+
+.step-label {
+  font-size: 12px;
+  color: var(--text-soft);
+  white-space: nowrap;
+  font-weight: 500;
+  transition: color var(--duration-fast) ease;
+}
+.step-label.completed { color: var(--green-primary); }
+.step-label.current { color: var(--text-secondary); font-weight: 600; }
+
+.stepper-mobile {
+  display: none;
+  font-family: var(--font-body); font-size: 12px;
+  color: var(--text-soft); text-align: center; font-weight: 500;
+  padding: var(--s3) 0; margin-bottom: var(--s5);
+}
+
+/* ===================================================================
+   GLASS WIZARD CARD
+   =================================================================== */
+.step-content {
+  background: var(--bg-card);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--bg-card-border);
+  border-radius: var(--r-xl);
+  padding: 40px 44px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.03);
+  animation: containerFadeIn 0.6s var(--ease-out);
+}
+
+@keyframes containerFadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===================================================================
+   STEP HEADER
+   =================================================================== */
+.step-header {
+  margin-bottom: var(--s6);
+}
+.step-number {
+  font-size: 12px; font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-soft);
+  margin-bottom: var(--s2);
+}
+.step-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin-bottom: var(--s1);
+}
+.step-description {
+  font-size: 15px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ===================================================================
+   FORM FIELDS — underline style
+   =================================================================== */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px 28px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.form-field.full { grid-column: 1 / -1; }
+
+.field-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-soft);
+}
+.field-required::after {
+  content: ' *';
+  color: var(--danger);
+}
+
+.field-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid rgba(79,132,72,0.15);
+  padding: 10px 0;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color var(--duration-normal) var(--ease-out);
+  width: 100%;
+}
+.field-input::placeholder {
+  color: var(--text-soft);
+  font-style: italic;
+}
+.field-input:focus {
+  border-color: var(--green-primary);
+}
+.field-input.error {
+  border-color: var(--danger);
+}
+.field-input.filled {
+  border-color: rgba(79,132,72,0.3);
+}
+
+.field-error {
+  font-size: 12.5px;
+  color: var(--danger);
+  min-height: 0;
+  margin-top: 4px;
+  transition: all var(--duration-normal) var(--ease-out);
+}
+.field-error:not(:empty) {
+  min-height: 16px;
+}
+.field-select.error {
+  border-color: var(--danger);
+}
+.form-field.has-error .card-selector-group .card-selector {
+  border-color: rgba(196,66,43,0.3);
+}
+
+.field-select {
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid rgba(79,132,72,0.15);
+  padding: 10px 0;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--text-primary);
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: border-color var(--duration-normal) var(--ease-out);
+  width: 100%;
+}
+.field-select:focus { border-color: var(--green-primary); }
+.field-select option { background: #fff; color: var(--text-primary); }
+
+.field-textarea {
+  background: rgba(255,255,255,0.25);
+  border: 1.5px solid rgba(79,132,72,0.12);
+  border-radius: var(--r-md);
+  padding: var(--s3);
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--text-primary);
+  outline: none;
+  resize: vertical;
+  min-height: 100px;
+  transition: border-color var(--duration-normal) var(--ease-out);
+  width: 100%;
+}
+.field-textarea:focus { border-color: var(--green-primary); }
+.field-textarea.error { border-color: var(--danger); }
+.field-textarea::placeholder { color: var(--text-soft); font-style: italic; }
+
+#docGlobalError {
+  grid-column: 1 / -1;
+}
+#docGlobalErrorMsg:not(:empty),
+#addrGlobalErrorMsg:not(:empty),
+#diagGlobalErrorMsg:not(:empty) {
+  padding: 12px 16px;
+  background: rgba(196,66,43,0.06);
+  border: 1px solid rgba(196,66,43,0.15);
+  border-radius: var(--r-md);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--danger);
+  line-height: 1.4;
+}
+
+/* ===================================================================
+   ADDRESS STEP — Location Type Gate
+   =================================================================== */
+.addr-type-group {
+  flex-direction: row !important;
+  gap: 12px !important;
+}
+.addr-type-card {
+  flex-direction: column !important;
+  align-items: center !important;
+  padding: 20px 16px 16px !important;
+  gap: 4px;
+  min-height: 100px;
+}
+.addr-type-icon {
+  font-size: 28px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.addr-type-label {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.addr-type-desc {
+  font-size: 11px;
+  color: var(--text-soft);
+  text-align: center;
+  line-height: 1.3;
+}
+.addr-type-card.selected .addr-type-label { color: var(--green-primary); }
+.addr-type-card.selected .addr-type-desc { color: var(--green-dark); }
+
+/* Hidden until location type selected */
+.addr-fields-hidden {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 500ms var(--ease-out), opacity 400ms var(--ease-out);
+}
+.addr-fields-visible {
+  max-height: 1200px;
+  opacity: 1;
+}
+
+/* Disabled field state */
+.form-field.field-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+  user-select: none;
+}
+.form-field.field-disabled .field-input,
+.form-field.field-disabled .field-select {
+  background: rgba(0,0,0,0.03);
+  cursor: not-allowed;
+}
+
+/* Info banners */
+.addr-info-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(79,132,72,0.06);
+  border: 1px solid rgba(79,132,72,0.12);
+  border-radius: var(--r-md);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+.addr-info-icon {
+  font-size: 16px;
+  color: var(--green-primary);
+  flex-shrink: 0;
+}
+
+/* Family member document chips */
+.fm-doc-chips {
+  display: flex; gap: var(--s2); flex-wrap: wrap; margin-bottom: var(--s3);
+}
+
+/* Document section that slides in */
+.fm-doc-section {
+  background: rgba(255,255,255,0.25);
+  border: 1px solid rgba(79,132,72,0.1);
+  border-radius: var(--r-md);
+  padding: var(--s4);
+  margin-top: var(--s3);
+  animation: fadeInUp 400ms var(--ease-out) both;
+}
+.fm-doc-section-title {
+  font-family: var(--font-display);
+  font-size: 13px; font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: var(--s3);
+  display: flex; align-items: center; gap: 6px;
+}
+.fm-doc-section-title .fm-doc-badge {
+  font-family: var(--font-body);
+  font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  padding: 2px 8px; border-radius: var(--r-pill);
+  background: var(--green-light); color: var(--green-primary);
+}
+.fm-doc-section .form-grid {
+  gap: var(--s3) var(--s4);
+}
+
+.form-section-title {
+  grid-column: 1 / -1;
+  font-size: 12px; font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-soft);
+  padding-top: var(--s3);
+  border-top: 1px solid rgba(79,132,72,0.08);
+  margin-top: var(--s2);
+}
+
+/* ===================================================================
+   CARD SELECTORS — glass-style pills (Sexo, Localizacao)
+   =================================================================== */
+.card-selector-group {
+  display: flex;
+  gap: 10px;
+  margin-top: var(--s2);
+}
+.card-selector {
+  flex: 1;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.4);
+  border: 1.5px solid rgba(79,132,72,0.1);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-out);
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.card-selector:hover {
+  background: rgba(255,255,255,0.6);
+  border-color: rgba(79,132,72,0.2);
+}
+.card-selector.selected {
+  background: var(--green-light);
+  border-color: var(--green-primary);
+  color: var(--green-primary);
+  font-weight: 600;
+  box-shadow: 0 0 0 3px rgba(79,132,72,0.08);
+}
+
+/* ===================================================================
+   PROGRAMS GRID — checkable items (Step 6)
+   =================================================================== */
+.programs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s3);
+  margin-top: var(--s3);
+}
+.program-item {
+  display: flex; align-items: center; gap: var(--s3);
+  padding: var(--s3) var(--s4);
+  border: 1.5px solid rgba(79,132,72,0.1);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  background: rgba(255,255,255,0.3);
+}
+.program-item:hover { border-color: rgba(79,132,72,0.2); background: rgba(255,255,255,0.5); }
+.program-item.selected {
+  border-color: var(--green-primary);
+  background: var(--green-light);
+  box-shadow: 0 0 0 3px rgba(79,132,72,0.08);
+}
+.program-check {
+  width: 18px; height: 18px; border-radius: var(--r-sm);
+  border: 1.5px solid rgba(79,132,72,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; flex-shrink: 0; color: transparent;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+.program-item.selected .program-check {
+  background: var(--green-primary); border-color: var(--green-primary); color: #fff;
+}
+.program-label { font-size: 14px; color: var(--text-muted); }
+.program-item.selected .program-label { color: var(--green-primary); font-weight: 500; }
+
+/* ===================================================================
+   DIAGNOSIS CARDS (Step 3)
+   =================================================================== */
+.diagnosis-card {
+  background: rgba(255,255,255,0.3);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.5);
+  border-radius: var(--r-lg);
+  padding: var(--s5);
+  position: relative;
+  animation: fadeInUp var(--duration-slow) var(--ease-out) both;
+}
+.diagnosis-card + .diagnosis-card { margin-top: var(--s3); }
+
+/* Completed diagnosis card */
+.diagnosis-card.diag-complete {
+  border-color: rgba(79,132,72,0.3);
+  background: rgba(79,132,72,0.04);
+}
+.diagnosis-card .diag-status {
+  position: absolute; top: var(--s3); right: 44px;
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-soft);
+  white-space: nowrap;
+  transition: all var(--duration-normal) var(--ease-out);
+}
+.diagnosis-card .diag-status-icon {
+  width: 18px; height: 18px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  border: 1.5px solid rgba(79,132,72,0.2);
+  color: transparent;
+  background: rgba(255,255,255,0.4);
+  transition: all var(--duration-normal) var(--ease-out);
+}
+.diagnosis-card.diag-complete .diag-status { color: var(--green-primary); }
+.diagnosis-card.diag-complete .diag-status-icon {
+  border-color: var(--green-primary);
+  background: var(--green-primary);
+  color: #fff;
+}
+.diagnosis-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s4) var(--s5);
+}
+.diagnosis-remove {
+  position: absolute; top: var(--s3); right: var(--s3);
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1px solid rgba(79,132,72,0.15); background: rgba(255,255,255,0.3);
+  color: var(--text-muted); font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+.diagnosis-remove:hover {
+  border-color: var(--danger); color: var(--danger);
+  background: var(--danger-light);
+}
+
+.quick-cids {
+  grid-column: 1 / -1;
+  display: flex; gap: var(--s2); flex-wrap: wrap;
+}
+.cid-chip {
+  font-family: var(--font-body);
+  font-size: 12px; font-weight: 500;
+  padding: 4px 12px;
+  border-radius: var(--r-pill);
+  border: 1px solid rgba(79,132,72,0.15);
+  background: rgba(255,255,255,0.3);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+.cid-chip:hover {
+  border-color: var(--green-primary); color: var(--green-primary);
+  background: var(--green-light);
+}
+.cid-chip.chip-active {
+  border-color: var(--green-primary);
+  color: #fff;
+  background: var(--green-primary);
+  font-weight: 600;
+}
+
+/* ===================================================================
+   FAMILY MEMBER LIST (Step 4)
+   =================================================================== */
+.member-row {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr auto;
+  align-items: center;
+  gap: var(--s4);
+  padding: var(--s3) 0;
+  border-bottom: 1px solid rgba(79,132,72,0.08);
+  animation: fadeInUp var(--duration-slow) var(--ease-out) both;
+}
+.member-index {
+  font-size: 12px; color: var(--text-soft);
+  font-variant-numeric: tabular-nums; min-width: 20px;
+}
+.member-name { font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--text-primary); }
+.member-meta { font-size: 14px; color: var(--text-muted); }
+.member-remove {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1px solid rgba(79,132,72,0.15);
+  background: transparent; color: var(--text-muted); font-size: 14px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+.member-remove:hover { border-color: var(--danger); color: var(--danger); }
+
+.empty-members {
+  text-align: center; padding: var(--s7) 0;
+  color: var(--text-soft); font-size: 15px;
+}
+
+/* ===================================================================
+   BUTTON BAR — pill buttons
+   =================================================================== */
+.button-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--s7);
+  padding-top: var(--s5);
+  border-top: 1px solid rgba(79,132,72,0.08);
+}
+
+.btn {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 28px;
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-out);
+  border: none;
+}
+.btn-secondary {
+  background: transparent;
+  border: 1.5px solid rgba(79,132,72,0.2);
+  color: var(--text-muted);
+  padding: 10px 20px;
+}
+.btn-secondary:hover { border-color: rgba(79,132,72,0.4); color: var(--text-secondary); }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--green-primary), var(--green-dark));
+  color: #fff;
+  box-shadow: 0 2px 12px rgba(79,132,72,0.2);
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(79,132,72,0.3);
+}
+
+.btn-add {
+  background: rgba(255,255,255,0.25);
+  border: 1.5px dashed rgba(79,132,72,0.2);
+  color: var(--text-muted);
+  width: 100%;
+  padding: var(--s3);
+  border-radius: var(--r-md);
+  font-family: var(--font-body);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  margin-top: var(--s3);
+}
+.btn-add:hover {
+  border-color: var(--green-primary); color: var(--green-primary);
+  background: var(--green-light);
+}
+
+/* ===================================================================
+   SUCCESS OVERLAY — glass container, spring animation
+   =================================================================== */
+.success-overlay {
+  position: fixed; inset: 0;
+  background: rgba(248,243,236,0.88);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 1000;
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--duration-slow) var(--ease-out);
+}
+.success-overlay.visible { opacity: 1; pointer-events: auto; }
+
+.success-glass {
+  background: var(--bg-card);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--bg-card-border);
+  border-radius: var(--r-xl);
+  padding: 48px 56px;
+  text-align: center;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.06);
+}
+
+.success-overlay.visible .success-glass {
+  animation: successIn 0.8s var(--ease-spring) both;
+}
+
+@keyframes successScale {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+@keyframes checkDraw {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes successIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.success-circle {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--green-primary), var(--green-dark));
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px;
+  box-shadow: 0 4px 20px rgba(79,132,72,0.25);
+  animation: successScale 600ms var(--ease-spring) both;
+}
+.success-circle svg {
+  width: 28px; height: 28px;
+  stroke: white; stroke-width: 2.5;
+  fill: none; stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 30; stroke-dashoffset: 30;
+  animation: checkDraw 500ms var(--ease-out) 400ms both;
+}
+
+.success-text {
+  font-family: var(--font-display);
+  font-size: 24px; font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  animation: fadeInUp var(--duration-slow) var(--ease-out) 600ms both;
+}
+.success-sub {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 24px;
+  animation: fadeInUp var(--duration-slow) var(--ease-out) 750ms both;
+}
+.success-actions {
+  display: flex; gap: 12px; justify-content: center;
+  animation: fadeInUp var(--duration-slow) var(--ease-out) 900ms both;
+}
+
+/* ===================================================================
+   ANIMATIONS
+   =================================================================== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===================================================================
+   ERROR BANNER
+   =================================================================== */
+@keyframes bannerSlide {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.error-banner {
+  display: flex; align-items: center; gap: var(--s3);
+  padding: var(--s3) var(--s4);
+  background: var(--danger-light);
+  border: 1px solid rgba(196,66,43,0.15);
+  border-radius: var(--r-md);
+  margin-bottom: var(--s5);
+  animation: bannerSlide var(--duration-slow) var(--ease-out);
+}
+.error-banner-icon {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--danger); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; flex-shrink: 0;
+}
+.error-banner-text { font-size: 14px; color: var(--danger); }
+
+/* ===================================================================
+   CUSTOM CHECKBOX
+   =================================================================== */
+.checkbox-field {
+  display: flex; align-items: center; gap: var(--s3);
+  cursor: pointer; padding: 12px 0;
+  font-family: var(--font-body); font-size: 14px; color: var(--text-muted);
+}
+.checkbox-field input[type="checkbox"] { display: none; }
+.checkbox-box {
+  width: 18px; height: 18px; border-radius: var(--r-sm);
+  border: 1.5px solid rgba(79,132,72,0.2); background: rgba(255,255,255,0.3);
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--duration-fast) var(--ease-out); flex-shrink: 0;
+}
+.checkbox-field input:checked + .checkbox-box {
+  background: var(--green-primary); border-color: var(--green-primary);
+}
+.checkbox-field input:checked + .checkbox-box::after {
+  content: '\2713'; color: white; font-size: 12px; font-weight: 700;
+}
+
+/* ===================================================================
+   RADIO GROUP
+   =================================================================== */
+.radio-group-label {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--text-soft);
+}
+.radio-group { display: flex; gap: var(--s4); padding: 8px 0; }
+.radio-option {
+  display: flex; align-items: center; gap: var(--s2);
+  font-family: var(--font-body); font-size: 15px; color: var(--text-primary); cursor: pointer;
+}
+
+/* ===================================================================
+   SCENARIO PANEL — draggable
+   =================================================================== */
+.scenario-panel {
+  position: fixed; top: var(--s3); right: var(--s3);
+  background: rgba(255,255,255,0.75); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(79,132,72,0.12); border-radius: var(--r-lg);
+  padding: var(--s3); z-index: 1000; min-width: 180px;
+  cursor: default; user-select: none;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+}
+.scenario-panel .drag-handle {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: grab; margin-bottom: var(--s2);
+}
+.scenario-panel .drag-handle:active { cursor: grabbing; }
+.scenario-panel .drag-handle h3 { margin-bottom: 0; }
+.scenario-panel .drag-dots { color: var(--text-soft); font-size: 14px; letter-spacing: 2px; line-height: 1; }
+.scenario-panel h3 {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--text-soft); margin-bottom: var(--s2);
+}
+.scenario-btn {
+  display: block; width: 100%; padding: var(--s2) var(--s3);
+  font-family: var(--font-body); font-size: 12px; color: var(--text-muted);
+  background: none; border: none; border-radius: var(--r-sm);
+  cursor: pointer; text-align: left;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+.scenario-btn:hover { background: var(--green-light); color: var(--text-secondary); }
+.scenario-btn.active { background: var(--green-light); color: var(--green-primary); font-weight: 600; }
+
+/* ===================================================================
+   RESPONSIVE — Mobile
+   =================================================================== */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main-content { margin-left: 0; padding: 24px 16px; }
+  .step-content { padding: 28px 24px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .programs-grid { grid-template-columns: 1fr; }
+  .diagnosis-grid { grid-template-columns: 1fr; }
+  .progress-steps { display: none; }
+  .stepper-mobile { display: block; }
+  .card-selector-group { flex-direction: column; }
+  .member-row { grid-template-columns: auto 1fr auto; gap: var(--s2); }
+  .member-meta { grid-column: 2; font-size: 12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Background -->
+<div class="bg-gradient"></div>
+<div class="bg-blob-1"></div>
+<div class="bg-blob-2"></div>
+
+<div class="app">
+  <!-- SIDEBAR — 64px icon, expands on hover -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">C</div>
+    <div class="sidebar-brand">Conecta</div>
+    <div class="sidebar-nav">
+      <a class="sidebar-item" href="/prototype-home-redesign.html">
+        <span class="sidebar-icon">&#9776;</span>
+        <span class="sidebar-label">Familias</span>
+        <span class="sidebar-badge">42</span>
+      </a>
+      <a class="sidebar-item active" href="/prototype-registration-redesign.html">
+        <span class="sidebar-icon">&#43;</span>
+        <span class="sidebar-label">Cadastro</span>
+      </a>
+      <a class="sidebar-item">
+        <span class="sidebar-icon">&#9638;</span>
+        <span class="sidebar-label">Relatorios</span>
+      </a>
+      <a class="sidebar-item">
+        <span class="sidebar-icon">&#9881;</span>
+        <span class="sidebar-label">Config</span>
+      </a>
+    </div>
+    <div class="sidebar-footer">
+      <div class="sidebar-avatar">DF</div>
+      <div class="sidebar-username">Davi Franklin</div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <!-- Top bar -->
+    <div class="wizard-topbar">
+      <a href="/prototype-home-redesign.html" class="back-link">&#8592; Voltar para Familias</a>
+      <span style="font-size:12px;color:var(--text-soft);font-weight:500;">Rascunho salvo automaticamente</span>
+    </div>
+
+    <div class="wizard-container">
+      <!-- STEPPER -->
+      <div class="stepper" id="stepper"></div>
+      <div class="stepper-mobile" id="stepperMobile"></div>
+
+      <!-- STEP CONTENT -->
+      <div id="stepContent"></div>
+
+      <!-- BUTTON BAR (inside glass card rendered by JS) is part of step content rendering -->
+    </div>
+  </main>
+</div>
+
+<!-- SUCCESS OVERLAY -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-glass">
+    <div class="success-circle">
+      <svg viewBox="0 0 24 24"><polyline points="6 12 10 16 18 8" /></svg>
+    </div>
+    <div class="success-text">Cadastro realizado!</div>
+    <div class="success-sub">A familia foi cadastrada com sucesso no sistema Conecta.</div>
+    <div class="success-actions">
+      <button class="btn btn-secondary" onclick="goToStep(0)">Novo cadastro</button>
+      <a href="/prototype-home-redesign.html" class="btn btn-primary" style="text-decoration:none;">Ver familias &#8594;</a>
+    </div>
+  </div>
+</div>
+
+<!-- SCENARIOS PANEL -->
+<div class="scenario-panel" id="scenarioPanel">
+  <div class="drag-handle" id="dragHandle">
+    <h3>Etapa</h3>
+    <span class="drag-dots">&#10303;</span>
+  </div>
+  <button class="scenario-btn active" onclick="goToStep(0)">0 -- Dados Pessoais</button>
+  <button class="scenario-btn" onclick="goToStep(1)">1 -- Documentos</button>
+  <button class="scenario-btn" onclick="goToStep(2)">2 -- Endereco</button>
+  <button class="scenario-btn" onclick="goToStep(3)">3 -- Diagnosticos</button>
+  <button class="scenario-btn" onclick="goToStep(4)">4 -- Familia</button>
+  <button class="scenario-btn" onclick="goToStep(5)">5 -- Especificidades</button>
+  <button class="scenario-btn" onclick="goToStep(6)">6 -- Ingresso</button>
+  <button class="scenario-btn" onclick="showSuccess()">Sucesso</button>
+</div>
+
+<script>
+const STEPS = [
+  { number: "Etapa 01", title: "Dados Pessoais", desc: "Informacoes basicas da pessoa de referencia." },
+  { number: "Etapa 02", title: "Documentos", desc: "CPF, NIS, CNS e documentos de identificacao. Informe ao menos um." },
+  { number: "Etapa 03", title: "Endereco", desc: "Situacao de moradia e localizacao." },
+  { number: "Etapa 04", title: "Diagnosticos", desc: "Pelo menos um diagnostico e obrigatorio." },
+  { number: "Etapa 05", title: "Composicao Familiar", desc: "Membros da familia (opcional)." },
+  { number: "Etapa 06", title: "Especificidades (opcional)", desc: "Identidade social, etnica ou cultural." },
+  { number: "Etapa 07", title: "Ingresso", desc: "Tipo de ingresso e motivo do atendimento." },
+];
+
+const STEP_LABELS = ["Pessoais", "Docs", "Endereco", "Diag.", "Familia", "Espec.", "Ingresso"];
+
+let currentStep = 0;
+
+function field(label, name, placeholder, required = false, full = false) {
+  return `<div class="form-field ${full ? 'full' : ''}" data-name="${name}" ${required ? 'data-required' : ''}>
+    <label class="field-label ${required ? 'field-required' : ''}">${label}</label>
+    <input class="field-input" type="text" placeholder="${placeholder}" data-name="${name}" />
+    <div class="field-error"></div>
+  </div>`;
+}
+
+function select(label, name, options, required = false) {
+  const opts = options.map(o => `<option value="${o}">${o}</option>`).join('');
+  return `<div class="form-field" data-name="${name}" ${required ? 'data-required' : ''}>
+    <label class="field-label ${required ? 'field-required' : ''}">${label}</label>
+    <select class="field-select" data-name="${name}"><option value="">Selecione...</option>${opts}</select>
+    <div class="field-error"></div>
+  </div>`;
+}
+
+function textarea(label, placeholder, full = true) {
+  return `<div class="form-field ${full ? 'full' : ''}">
+    <label class="field-label">${label}</label>
+    <textarea class="field-textarea" placeholder="${placeholder}"></textarea>
+  </div>`;
+}
+
+const stepForms = [
+  // Step 0: Dados Pessoais
+  () => `<div class="form-grid">
+    ${field("Nome", "firstName", "Nome", true)}
+    ${field("Sobrenome", "lastName", "Sobrenome", true)}
+    ${field("Nome Social", "socialName", "Nome social (opcional)")}
+    ${field("Nome da Mae", "motherName", "Nome completo da mae", true)}
+    <div class="form-field" data-name="birthDate" data-required>
+      <label class="field-label field-required">Data de Nascimento</label>
+      <input class="field-input" type="text" placeholder="DD/MM/AAAA" maxlength="10" data-name="birthDate" oninput="maskDateInput(this)" />
+      <div class="field-error"></div>
+    </div>
+    ${select("Nacionalidade", "nationality", ["Brasileira", "Naturalizada", "Estrangeira"], true)}
+    <div class="form-field" data-name="sex" data-required>
+      <label class="field-label field-required">Sexo</label>
+      <div class="card-selector-group">
+        <div class="card-selector" onclick="selectSingle(this)">Masculino</div>
+        <div class="card-selector" onclick="selectSingle(this)">Feminino</div>
+        <div class="card-selector" onclick="selectSingle(this)">Outro</div>
+      </div>
+      <div class="field-error"></div>
+    </div>
+    <div class="form-field">
+      <label class="field-label">Telefone</label>
+      <input class="field-input" type="text" placeholder="(00) 00000-0000" oninput="maskPhone(this)" maxlength="15" />
+    </div>
+  </div>`,
+
+  // Step 1: Documentos (CD-001: at least one of CPF, NIS, RG)
+  () => `<div class="form-grid">
+    <div class="form-field full" id="docGlobalError">
+      <div class="field-error" id="docGlobalErrorMsg"></div>
+    </div>
+    <div class="form-field" data-name="cpf">
+      <label class="field-label">CPF</label>
+      <input class="field-input" type="text" data-name="cpf" placeholder="000.000.000-00" maxlength="14" oninput="maskCPF(this)" />
+      <div class="field-error"></div>
+    </div>
+    <div class="form-field" data-name="nis">
+      <label class="field-label">NIS</label>
+      <input class="field-input" type="text" data-name="nis" placeholder="00000000000" maxlength="11" oninput="maskDigitsOnly(this, 11)" />
+      <div class="field-error"></div>
+    </div>
+    <div class="form-field" data-name="cns">
+      <label class="field-label">CNS</label>
+      <input class="field-input" type="text" data-name="cns" placeholder="000 0000 0000 0000" maxlength="18" oninput="maskCNS(this)" />
+      <div class="field-error"></div>
+    </div>
+    <div class="form-section-title">RG (preencha todos ou nenhum)</div>
+    <div class="form-field" data-name="rgNumber">
+      <label class="field-label">Numero do RG</label>
+      <input class="field-input" type="text" data-name="rgNumber" placeholder="Numero" maxlength="15" oninput="maskRG(this)" />
+      <div class="field-error"></div>
+    </div>
+    <div class="form-field" data-name="rgUf">
+      <label class="field-label">UF</label>
+      <input class="field-input" type="text" data-name="rgUf" placeholder="UF" maxlength="2" oninput="maskUF(this)" />
+      <div class="field-error"></div>
+    </div>
+    <div class="form-field" data-name="rgAgency">
+      <label class="field-label">Orgao Emissor</label>
+      <input class="field-input" type="text" data-name="rgAgency" placeholder="SSP, DETRAN..." />
+      <div class="field-error"></div>
+    </div>
+    <div class="form-field" data-name="rgDate">
+      <label class="field-label">Data de Emissao</label>
+      <input class="field-input" type="text" data-name="rgDate" placeholder="DD/MM/AAAA" maxlength="10" oninput="maskDateInput(this)" />
+      <div class="field-error"></div>
+    </div>
+  </div>`,
+
+  // Step 2: Endereco (ADDR-002, ADDR-003, ADDR-004, CEP-001..CEP-004)
+  () => `<div>
+    <div class="form-field full" id="addrGlobalError">
+      <div class="field-error" id="addrGlobalErrorMsg"></div>
+    </div>
+
+    <!-- GATE: Location type selector (must choose before rest appears) -->
+    <div class="form-field full" data-name="locationType" data-required style="margin-bottom:var(--s5)">
+      <label class="field-label field-required" style="margin-bottom:var(--s3);font-size:13px">Qual a situacao de moradia?</label>
+      <div class="card-selector-group addr-type-group">
+        <div class="card-selector addr-type-card" onclick="selectLocationType(this, 'URBANO')">
+          <div class="addr-type-icon">&#127959;</div>
+          <div class="addr-type-label">Urbano</div>
+          <div class="addr-type-desc">Residencia em area urbana</div>
+        </div>
+        <div class="card-selector addr-type-card" onclick="selectLocationType(this, 'RURAL')">
+          <div class="addr-type-icon">&#127806;</div>
+          <div class="addr-type-label">Rural</div>
+          <div class="addr-type-desc">Residencia em area rural</div>
+        </div>
+        <div class="card-selector addr-type-card" onclick="selectLocationType(this, 'RUA')">
+          <div class="addr-type-icon">&#128716;</div>
+          <div class="addr-type-label">Situacao de Rua</div>
+          <div class="addr-type-desc">Pessoa sem moradia fixa</div>
+        </div>
+      </div>
+      <div class="field-error"></div>
+    </div>
+
+    <!-- ADDRESS FIELDS: hidden until location type is selected -->
+    <div id="addrFieldsContainer" class="addr-fields-hidden">
+      <div class="form-grid">
+        <div class="form-field full addr-homeless-hint" id="homelessHint" style="display:none">
+          <div class="addr-info-banner">
+            <span class="addr-info-icon">&#9432;</span>
+            Apenas Estado e Cidade sao necessarios para cobertura territorial do CRAS.
+          </div>
+        </div>
+        <div class="form-field full addr-rural-hint" id="ruralHint" style="display:none">
+          <div class="addr-info-banner">
+            <span class="addr-info-icon">&#9432;</span>
+            Rua e Complemento nao se aplicam para area rural.
+          </div>
+        </div>
+        <div class="form-field addr-field-housing" data-name="housing" data-required>
+          <label class="field-label field-required">Tipo de Moradia</label>
+          <select class="field-select" data-name="housing"><option value="">Selecione...</option>
+            <option value="Propria">Propria</option><option value="Alugada">Alugada</option>
+            <option value="Cedida">Cedida</option><option value="Outros">Outros</option>
+          </select>
+          <div class="field-error"></div>
+        </div>
+        <div class="form-field addr-field-cep" data-name="cep">
+          <label class="field-label">CEP</label>
+          <input class="field-input" type="text" data-name="cep" placeholder="00000-000" maxlength="9" oninput="maskCEP(this)" />
+          <div class="field-error"></div>
+        </div>
+        <div class="form-field addr-field-street" data-name="street">
+          <label class="field-label">Rua</label>
+          <input class="field-input" type="text" data-name="street" placeholder="Logradouro" />
+          <div class="field-error"></div>
+        </div>
+        <div class="form-field addr-field-number" data-name="number">
+          <label class="field-label">Numero</label>
+          <input class="field-input" type="text" data-name="number" placeholder="N" />
+          <div class="field-error"></div>
+        </div>
+        <div class="form-field addr-field-complement" data-name="complement">
+          <label class="field-label">Complemento</label>
+          <input class="field-input" type="text" data-name="complement" placeholder="Apto, bloco..." />
+          <div class="field-error"></div>
+        </div>
+        <div class="form-field addr-field-neighborhood" data-name="neighborhood">
+          <label class="field-label">Bairro</label>
+          <input class="field-input" type="text" data-name="neighborhood" placeholder="Bairro" />
+          <div class="field-error"></div>
+        </div>
+        ${select("Estado", "state", ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"], true)}
+        ${field("Cidade", "city", "Cidade", true)}
+        <div class="form-field addr-field-shelter">
+          <label class="checkbox-field">
+            <input type="checkbox" name="isShelter" />
+            <span class="checkbox-box"></span>
+            Unidade de acolhimento / abrigo
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>`,
+
+  // Step 3: Diagnosticos (PAT-001: at least one, ICD-001, DIA-001..DIA-003)
+  () => `<div>
+    <div class="form-field full" id="diagGlobalError">
+      <div class="field-error" id="diagGlobalErrorMsg"></div>
+    </div>
+    <div id="diagList">
+      <div class="diagnosis-card">
+        <div class="diag-status"><span class="diag-status-icon">&#10003;</span><span class="diag-status-text">Pendente</span></div>
+        <button class="diagnosis-remove" title="Remover">&times;</button>
+        <div class="diagnosis-grid">
+          <div class="form-field" data-name="diagCid"><label class="field-label field-required">Codigo CID</label><input class="field-input diag-cid" placeholder="Ex: G80" oninput="checkDiagComplete(this)" /><div class="field-error"></div></div>
+          <div class="form-field" data-name="diagDate"><label class="field-label field-required">Data</label><input class="field-input diag-date" placeholder="DD/MM/AAAA" maxlength="10" oninput="maskDateInput(this); checkDiagComplete(this)" /><div class="field-error"></div></div>
+          <div class="form-field full" data-name="diagDesc"><label class="field-label field-required">Descricao</label><input class="field-input diag-desc" placeholder="Descricao do diagnostico" oninput="checkDiagComplete(this)" /><div class="field-error"></div></div>
+          <div class="quick-cids">
+            <button class="cid-chip" type="button" onclick="fillCID(this,'G80','Paralisia cerebral')">G80 -- Paralisia cerebral</button>
+            <button class="cid-chip" type="button" onclick="fillCID(this,'Q90','Sindrome de Down')">Q90 -- Sindrome de Down</button>
+            <button class="cid-chip" type="button" onclick="fillCID(this,'F84.0','Autismo infantil')">F84.0 -- Autismo</button>
+            <button class="cid-chip" type="button" onclick="fillCID(this,'E70','Fenilcetonuria')">E70 -- Fenilcetonuria</button>
+            <button class="cid-chip" type="button" onclick="fillCID(this,'G71.0','Distrofia muscular')">G71.0 -- Distrofia muscular</button>
+            <button class="cid-chip" type="button" onclick="fillCID(this,'R69','Causas de morbidade desconhecidas e nao especificadas')">R69 -- Morbidade n/e</button>
+            <button class="cid-chip" type="button" onclick="fillCID(this,'Z03','Observacao e avaliacao medica por suspeita de doencas e afeccoes')">Z03 -- Obs. por suspeita</button>
+            <button class="cid-chip" type="button" onclick="fillCID(this,'Z03.9','Observacao nao especificada')">Z03.9 -- Obs. n/e</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="btn-add" onclick="addDiagnosis()">+ Adicionar diagnostico</button>
+  </div>`,
+
+  // Step 4: Familia
+  () => `<div>
+    <div id="memberList">
+      <div class="member-row" style="animation-delay:0ms">
+        <span class="member-index">01</span>
+        <span class="member-name">Silva, Maria Aparecida</span>
+        <span class="member-meta">Pessoa de referencia</span>
+        <span style="min-width:28px"></span>
+      </div>
+    </div>
+    <div id="familyForm" style="display:none"></div>
+    <button class="btn-add" id="btnAddMember" onclick="showFamilyForm()">+ Adicionar membro</button>
+  </div>`,
+
+  // Step 5: Especificidades
+  () => `<div class="form-grid">
+    ${select("Identidade Social", "identity", [
+      "Quilombola", "Indigena", "Ribeirinho", "Cigano",
+      "Extrativista", "Pescador artesanal", "Pertencente a comunidade de terreiro",
+      "Nenhuma das anteriores"
+    ])}
+    <div class="form-field"><label class="field-label">Descricao</label><input class="field-input" placeholder="Detalhes adicionais" /></div>
+    ${textarea("Observacoes", "Informacoes complementares sobre especificidades...")}
+  </div>`,
+
+  // Step 6: Ingresso (ING-001, care.yaml)
+  () => `<div class="form-grid">
+    ${select("Tipo de Ingresso", "ingressType", ["Demanda espontanea", "Busca ativa", "Encaminhamento", "Reincidencia"], true)}
+    <div class="form-field" data-name="originName">
+      <label class="field-label">Nome da Origem</label>
+      <input class="field-input" type="text" data-name="originName" placeholder="Nome da origem" maxlength="200" />
+      <div class="field-error"></div>
+    </div>
+    <div class="form-field" data-name="originContact">
+      <label class="field-label">Contato da Origem</label>
+      <input class="field-input" type="text" data-name="originContact" placeholder="Telefone ou email" maxlength="200" />
+      <div class="field-error"></div>
+    </div>
+    <div class="form-field full" data-name="serviceReason">
+      <label class="field-label field-required">Motivo do Atendimento</label>
+      <textarea class="field-textarea" data-name="serviceReason" placeholder="Descreva o motivo do primeiro atendimento..." maxlength="2000"></textarea>
+      <div class="field-error"></div>
+    </div>
+    <div class="form-section-title">Programas sociais vinculados</div>
+    <div class="form-field full">
+      <div class="programs-grid">
+        <div class="program-item" onclick="this.classList.toggle('selected')">
+          <div class="program-check">&#10003;</div>
+          <span class="program-label">BPC (Beneficio de Prestacao Continuada)</span>
+        </div>
+        <div class="program-item" onclick="this.classList.toggle('selected')">
+          <div class="program-check">&#10003;</div>
+          <span class="program-label">Bolsa Familia</span>
+        </div>
+        <div class="program-item" onclick="this.classList.toggle('selected')">
+          <div class="program-check">&#10003;</div>
+          <span class="program-label">Auxilio Brasil</span>
+        </div>
+        <div class="program-item" onclick="this.classList.toggle('selected')">
+          <div class="program-check">&#10003;</div>
+          <span class="program-label">PETI</span>
+        </div>
+        <div class="program-item" onclick="this.classList.toggle('selected')">
+          <div class="program-check">&#10003;</div>
+          <span class="program-label">Outros programas</span>
+        </div>
+      </div>
+    </div>
+    <div class="form-field full">
+      <label class="field-label">Observacao</label>
+      <textarea class="field-textarea" placeholder="Anotacoes gerais sobre o ingresso..." maxlength="500"></textarea>
+    </div>
+  </div>`,
+];
+
+function renderStepper() {
+  const el = document.getElementById('stepper');
+  // Progress bar
+  const pct = ((currentStep) / (STEPS.length - 1)) * 100;
+  let html = `
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" style="width:${pct}%"></div>
+    </div>
+    <div class="progress-steps">
+  `;
+  html += STEPS.map((s, i) => {
+    const dotCls = i < currentStep ? 'completed' : i === currentStep ? 'current' : '';
+    const lblCls = i < currentStep ? 'completed' : i === currentStep ? 'current' : '';
+    return `<div class="step-item" onclick="goToStep(${i})">
+      <div class="step-dot ${dotCls}"></div>
+      <span class="step-label ${lblCls}">${STEP_LABELS[i]}</span>
+    </div>`;
+  }).join('');
+  html += `</div>`;
+  el.innerHTML = html;
+}
+
+function renderStep() {
+  const step = STEPS[currentStep];
+  const content = document.getElementById('stepContent');
+  const isLastStep = currentStep === STEPS.length - 1;
+  content.innerHTML = `
+    <div class="step-content" key="${currentStep}">
+      <div class="step-header">
+        <div class="step-number">${step.number}</div>
+        <h3 class="step-title">${step.title}</h3>
+        <p class="step-description">${step.desc}</p>
+      </div>
+      ${stepForms[currentStep]()}
+      <div class="button-bar">
+        <button class="btn btn-secondary" id="btnBack" onclick="prevStep()" style="${currentStep === 0 ? 'visibility:hidden' : ''}">&#8592; Anterior</button>
+        <button class="btn btn-primary" id="btnNext" onclick="nextStep()">${isLastStep ? 'Salvar Cadastro' : 'Proximo &#8594;'}</button>
+      </div>
+    </div>
+  `;
+
+  // Mobile stepper
+  const mobileEl = document.getElementById('stepperMobile');
+  mobileEl.textContent = `Etapa ${currentStep + 1} de ${STEPS.length} \u2014 ${STEP_LABELS[currentStep]}`;
+
+  // Update scenario buttons
+  document.querySelectorAll('.scenario-btn').forEach((b, i) => {
+    b.classList.toggle('active', i === currentStep);
+  });
+}
+
+/* ═══════════════════════════════════════════
+   STEP VALIDATION (per contracts/)
+   ═══════════════════════════════════════════ */
+
+// Helpers
+function getFieldValue(name) {
+  const el = document.querySelector(`input[data-name="${name}"]`);
+  return el ? el.value.trim() : '';
+}
+
+function setFieldError(name, msg) {
+  const field = document.querySelector(`.form-field[data-name="${name}"]`);
+  if (!field) return;
+  const errorEl = field.querySelector('.field-error');
+  const input = field.querySelector('.field-input');
+  const sel = field.querySelector('.field-select');
+  field.classList.add('has-error');
+  if (input) input.classList.add('error');
+  if (sel) sel.classList.add('error');
+  if (errorEl) errorEl.textContent = msg;
+}
+
+function clearAllErrors() {
+  const stepEl = document.getElementById('stepContent');
+  stepEl.querySelectorAll('.has-error').forEach(el => el.classList.remove('has-error'));
+  stepEl.querySelectorAll('.field-input.error').forEach(el => el.classList.remove('error'));
+  stepEl.querySelectorAll('.field-select.error').forEach(el => el.classList.remove('error'));
+  stepEl.querySelectorAll('.field-error').forEach(el => el.textContent = '');
+}
+
+// CPF checksum validation (CPF-004, CPF-005)
+function isValidCPF(cpf) {
+  const digits = cpf.replace(/\D/g, '');
+  if (digits.length !== 11) return false;
+  if (/^(\d)\1{10}$/.test(digits)) return false; // CPF-004: no repeated digits
+  // CPF-005: checksum
+  let sum = 0;
+  for (let i = 0; i < 9; i++) sum += parseInt(digits[i]) * (10 - i);
+  let check = 11 - (sum % 11);
+  if (check >= 10) check = 0;
+  if (parseInt(digits[9]) !== check) return false;
+  sum = 0;
+  for (let i = 0; i < 10; i++) sum += parseInt(digits[i]) * (11 - i);
+  check = 11 - (sum % 11);
+  if (check >= 10) check = 0;
+  return parseInt(digits[10]) === check;
+}
+
+// Step 0: Dados Pessoais
+function validateStep0() {
+  clearAllErrors();
+  let valid = true;
+  const stepEl = document.getElementById('stepContent');
+
+  // Required text fields
+  ['firstName', 'lastName', 'motherName'].forEach(name => {
+    if (!getFieldValue(name)) { valid = false; setFieldError(name, 'Campo obrigatorio'); }
+  });
+
+  // birthDate
+  const bd = getFieldValue('birthDate');
+  if (!bd) {
+    valid = false; setFieldError('birthDate', 'Campo obrigatorio');
+  } else {
+    const parts = bd.split('/');
+    if (parts.length !== 3 || parts[2].length !== 4) {
+      valid = false; setFieldError('birthDate', 'Formato invalido (DD/MM/AAAA)');
+    } else {
+      const d = parseInt(parts[0]), m = parseInt(parts[1]), y = parseInt(parts[2]);
+      if (m < 1 || m > 12 || d < 1 || d > 31) {
+        valid = false; setFieldError('birthDate', 'Data invalida');
+      } else if (new Date(y, m - 1, d) > new Date()) {
+        valid = false; setFieldError('birthDate', 'Data nao pode ser futura (PD-005)');
+      }
+    }
+  }
+
+  // nationality (select)
+  const natSel = stepEl.querySelector('select[data-name="nationality"]');
+  if (natSel && !natSel.value) {
+    valid = false; setFieldError('nationality', 'Campo obrigatorio');
+  }
+
+  // sex (card selector)
+  const sexField = stepEl.querySelector('.form-field[data-name="sex"]');
+  const sexSelected = sexField?.querySelector('.card-selector.selected');
+  if (!sexSelected) {
+    valid = false;
+    sexField?.classList.add('has-error');
+    const errEl = sexField?.querySelector('.field-error');
+    if (errEl) errEl.textContent = 'Campo obrigatorio';
+  }
+
+  return valid;
+}
+
+// Step 1: Documentos (CD-001 + field-level)
+function validateStep1() {
+  clearAllErrors();
+  let valid = true;
+
+  const cpfVal = getFieldValue('cpf').replace(/\D/g, '');
+  const nisVal = getFieldValue('nis').replace(/\D/g, '');
+  const rgNumber = getFieldValue('rgNumber').trim();
+  const rgUf = getFieldValue('rgUf').trim();
+  const rgAgency = getFieldValue('rgAgency').trim();
+  const rgDate = getFieldValue('rgDate').trim();
+  const hasRg = rgNumber || rgUf || rgAgency || rgDate;
+
+  // CD-001: at least one of CPF, NIS, or RG
+  if (!cpfVal && !nisVal && !hasRg) {
+    valid = false;
+    const globalErr = document.getElementById('docGlobalErrorMsg');
+    if (globalErr) globalErr.textContent = 'Pelo menos um documento deve ser informado — CPF, NIS ou RG (CD-001)';
+  }
+
+  // CPF validation (if filled)
+  if (cpfVal) {
+    if (cpfVal.length !== 11) {
+      valid = false; setFieldError('cpf', 'CPF deve ter 11 digitos (CPF-003)');
+    } else if (!isValidCPF(cpfVal)) {
+      valid = false; setFieldError('cpf', 'CPF invalido (CPF-005)');
+    }
+  }
+
+  // NIS validation (if filled)
+  if (nisVal && nisVal.length !== 11) {
+    valid = false; setFieldError('nis', 'NIS deve ter 11 digitos (NIS-002)');
+  }
+
+  // RG: if any field filled, all must be filled (RG-001 to RG-006)
+  if (hasRg) {
+    if (!rgNumber) { valid = false; setFieldError('rgNumber', 'Obrigatorio quando RG informado (RG-001)'); }
+    if (!rgUf) { valid = false; setFieldError('rgUf', 'Obrigatorio quando RG informado (RG-004)'); }
+    if (!rgAgency) { valid = false; setFieldError('rgAgency', 'Obrigatorio quando RG informado (RG-005)'); }
+    if (!rgDate) {
+      valid = false; setFieldError('rgDate', 'Obrigatorio quando RG informado (RG-006)');
+    } else {
+      // Validate date format + not future
+      const parts = rgDate.split('/');
+      if (parts.length !== 3 || parts[2].length !== 4) {
+        valid = false; setFieldError('rgDate', 'Formato invalido (DD/MM/AAAA)');
+      } else {
+        const d = parseInt(parts[0]), m = parseInt(parts[1]), y = parseInt(parts[2]);
+        if (m < 1 || m > 12 || d < 1 || d > 31) {
+          valid = false; setFieldError('rgDate', 'Data invalida');
+        } else if (new Date(y, m - 1, d) > new Date()) {
+          valid = false; setFieldError('rgDate', 'Data de emissao nao pode ser futura (RG-006)');
+        }
+      }
+    }
+  }
+
+  return valid;
+}
+
+// Step 2: Endereco (CEP-001..CEP-004, ADDR-002..ADDR-004)
+function validateStep2() {
+  clearAllErrors();
+  let valid = true;
+  const stepEl = document.getElementById('stepContent');
+
+  // Location Type — must be selected first
+  const locField = stepEl.querySelector('.form-field[data-name="locationType"]');
+  const locSelected = locField?.querySelector('.card-selector.selected');
+  if (!locSelected) {
+    valid = false;
+    locField?.classList.add('has-error');
+    const errEl = locField?.querySelector('.field-error');
+    if (errEl) errEl.textContent = 'Selecione a situacao de moradia';
+    return valid; // Stop here — nothing else to validate
+  }
+
+  // State (UF) — always required (ADDR-002, ADDR-003)
+  const stateSel = stepEl.querySelector('select[data-name="state"]');
+  if (stateSel && !stateSel.value) {
+    valid = false; setFieldError('state', 'UF e obrigatoria (ADDR-002)');
+  }
+
+  // City — always required (ADDR-004)
+  if (!getFieldValue('city')) {
+    valid = false; setFieldError('city', 'Cidade e obrigatoria (ADDR-004)');
+  }
+
+  // For Morador de Rua: only state + city needed
+  if (selectedLocationType === 'RUA') {
+    return valid;
+  }
+
+  // Tipo de Moradia — required for Urbano and Rural
+  const housingSel = stepEl.querySelector('select[data-name="housing"]');
+  if (housingSel && !housingSel.value) {
+    valid = false; setFieldError('housing', 'Tipo de moradia e obrigatorio');
+  }
+
+  // CEP — optional, but if filled must be valid
+  const cepVal = getFieldValue('cep').replace(/\D/g, '');
+  if (cepVal) {
+    if (cepVal.length !== 8) {
+      valid = false; setFieldError('cep', 'CEP deve ter 8 digitos (CEP-003)');
+    } else if (!isValidCEPRange(cepVal)) {
+      valid = false; setFieldError('cep', 'CEP nao pertence a nenhuma faixa valida (CEP-004)');
+    }
+  }
+
+  return valid;
+}
+
+// CEP state range validator (CEP-004 / _custom-validators.yaml)
+function isValidCEPRange(cep) {
+  const n = parseInt(cep, 10);
+  const ranges = [
+    [1000000, 19999999],   // SP
+    [20000000, 28999999],  // RJ
+    [29000000, 29999999],  // ES
+    [30000000, 39999999],  // MG
+    [40000000, 48999999],  // BA
+    [49000000, 49999999],  // SE
+    [50000000, 56999999],  // PE
+    [57000000, 57999999],  // AL
+    [58000000, 58999999],  // PB
+    [59000000, 59999999],  // RN
+    [60000000, 63999999],  // CE
+    [64000000, 64999999],  // PI
+    [65000000, 65999999],  // MA
+    [66000000, 68899999],  // PA
+    [68900000, 68999999],  // AP
+    [69000000, 69299999],  // AM
+    [69300000, 69389999],  // RR
+    [69400000, 69899999],  // AM (2nd range)
+    [69900000, 69999999],  // AC
+    [70000000, 73699999],  // DF
+    [72800000, 76799999],  // GO
+    [77000000, 77995999],  // TO
+    [78000000, 78899999],  // MT
+    [78900000, 78999999],  // RO
+    [79000000, 79999999],  // MS
+    [80000000, 87999999],  // PR
+    [88000000, 89999999],  // SC
+    [90000000, 99999999],  // RS
+  ];
+  return ranges.some(([min, max]) => n >= min && n <= max);
+}
+
+// Step 6: Ingresso (ING-001, care.yaml)
+function validateStep6() {
+  clearAllErrors();
+  let valid = true;
+  const stepEl = document.getElementById('stepContent');
+
+  // Tipo de Ingresso — required
+  const typeSel = stepEl.querySelector('select[data-name="ingressType"]');
+  if (typeSel && !typeSel.value) {
+    valid = false; setFieldError('ingressType', 'Tipo de ingresso e obrigatorio');
+  }
+
+  // Nome da Origem — optional, max 200
+  const originVal = getFieldValue('originName');
+  if (originVal && originVal.length > 200) {
+    valid = false; setFieldError('originName', 'Maximo 200 caracteres');
+  }
+
+  // Contato da Origem — optional, max 200
+  const contactVal = getFieldValue('originContact');
+  if (contactVal && contactVal.length > 200) {
+    valid = false; setFieldError('originContact', 'Maximo 200 caracteres');
+  }
+
+  // Motivo do Atendimento — required (ING-001)
+  const reasonEl = stepEl.querySelector('textarea[data-name="serviceReason"]');
+  const reasonVal = reasonEl?.value.trim() || '';
+  if (!reasonVal) {
+    valid = false;
+    const field = stepEl.querySelector('[data-name="serviceReason"]');
+    if (field) {
+      field.classList.add('has-error');
+      reasonEl?.classList.add('error');
+      field.querySelector('.field-error').textContent = 'Motivo do atendimento e obrigatorio (ING-001)';
+    }
+  } else if (reasonVal.length > 2000) {
+    valid = false;
+    const field = stepEl.querySelector('[data-name="serviceReason"]');
+    if (field) {
+      field.classList.add('has-error');
+      reasonEl?.classList.add('error');
+      field.querySelector('.field-error').textContent = 'Maximo 2000 caracteres';
+    }
+  }
+
+  return valid;
+}
+
+// Dispatcher
+function validateCurrentStep() {
+  if (currentStep === 0) return validateStep0();
+  if (currentStep === 1) return validateStep1();
+  if (currentStep === 2) return validateStep2();
+  if (currentStep === 3) return validateStep3();
+  if (currentStep === 6) return validateStep6();
+  // Steps 4, 5 pass through (optional)
+  return true;
+}
+
+function nextStep() {
+  // Validate before advancing
+  if (!validateCurrentStep()) {
+    // Scroll to first error
+    const firstError = document.querySelector('.has-error');
+    if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  if (currentStep < STEPS.length - 1) {
+    currentStep++;
+    renderStepper();
+    renderStep();
+  } else {
+    // Simulate saving state
+    const btn = document.getElementById('btnNext');
+    btn.textContent = 'Salvando...';
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.disabled = false;
+      showSuccess();
+    }, 1500);
+  }
+}
+
+function prevStep() {
+  if (currentStep > 0) {
+    currentStep--;
+    renderStepper();
+    renderStep();
+  }
+}
+
+function goToStep(n) {
+  currentStep = n;
+  selectedLocationType = null;
+  document.getElementById('successOverlay').classList.remove('visible');
+  renderStepper();
+  renderStep();
+}
+
+function showSuccess() {
+  // Gather form data and save to localStorage
+  const firstName = document.querySelector('[placeholder="Nome"]')?.value || 'Novo';
+  const lastName = document.querySelector('[placeholder="Sobrenome"]')?.value || 'Paciente';
+  const name = `${lastName}, ${firstName}`;
+  const registration = {
+    name,
+    diagnosis: 'Aguardando diagnostico',
+    members: 1,
+    status: 'active',
+  };
+  try {
+    const saved = JSON.parse(localStorage.getItem('conecta_registrations') || '[]');
+    saved.push(registration);
+    localStorage.setItem('conecta_registrations', JSON.stringify(saved));
+  } catch (_) { /* ignore */ }
+
+  document.getElementById('successOverlay').classList.add('visible');
+  document.querySelectorAll('.scenario-btn').forEach((b, i) => {
+    b.classList.toggle('active', i === 7);
+  });
+}
+
+function diagChipsHTML() {
+  return `
+    <div class="quick-cids">
+      <button class="cid-chip" type="button" onclick="fillCID(this,'G80','Paralisia cerebral')">G80 -- Paralisia cerebral</button>
+      <button class="cid-chip" type="button" onclick="fillCID(this,'Q90','Sindrome de Down')">Q90 -- Sindrome de Down</button>
+      <button class="cid-chip" type="button" onclick="fillCID(this,'F84.0','Autismo infantil')">F84.0 -- Autismo</button>
+      <button class="cid-chip" type="button" onclick="fillCID(this,'E70','Fenilcetonuria')">E70 -- Fenilcetonuria</button>
+      <button class="cid-chip" type="button" onclick="fillCID(this,'G71.0','Distrofia muscular')">G71.0 -- Distrofia muscular</button>
+      <button class="cid-chip" type="button" onclick="fillCID(this,'R69','Causas de morbidade desconhecidas e nao especificadas')">R69 -- Morbidade n/e</button>
+      <button class="cid-chip" type="button" onclick="fillCID(this,'Z03','Observacao e avaliacao medica por suspeita de doencas e afeccoes')">Z03 -- Obs. por suspeita</button>
+      <button class="cid-chip" type="button" onclick="fillCID(this,'Z03.9','Observacao nao especificada')">Z03.9 -- Obs. n/e</button>
+    </div>`;
+}
+
+function addDiagnosis() {
+  const list = document.getElementById('diagList');
+  const card = document.createElement('div');
+  card.className = 'diagnosis-card';
+  card.innerHTML = `
+    <div class="diag-status"><span class="diag-status-icon">&#10003;</span><span class="diag-status-text">Pendente</span></div>
+    <button class="diagnosis-remove" onclick="this.parentElement.remove()">&times;</button>
+    <div class="diagnosis-grid">
+      <div class="form-field" data-name="diagCid"><label class="field-label field-required">Codigo CID</label><input class="field-input diag-cid" placeholder="Ex: Q90" oninput="checkDiagComplete(this)" /><div class="field-error"></div></div>
+      <div class="form-field" data-name="diagDate"><label class="field-label field-required">Data</label><input class="field-input diag-date" placeholder="DD/MM/AAAA" maxlength="10" oninput="maskDateInput(this); checkDiagComplete(this)" /><div class="field-error"></div></div>
+      <div class="form-field full" data-name="diagDesc"><label class="field-label field-required">Descricao</label><input class="field-input diag-desc" placeholder="Descricao do diagnostico" oninput="checkDiagComplete(this)" /><div class="field-error"></div></div>
+      ${diagChipsHTML()}
+    </div>
+  `;
+  list.appendChild(card);
+}
+
+// Auto-fill CID code + description from quick-select chip
+function fillCID(chipEl, code, description) {
+  const card = chipEl.closest('.diagnosis-card');
+  if (!card) return;
+  const cidInput = card.querySelector('.diag-cid');
+  const descInput = card.querySelector('.diag-desc');
+  if (cidInput) cidInput.value = code;
+  if (descInput) descInput.value = description;
+  // Highlight the selected chip
+  card.querySelectorAll('.cid-chip').forEach(c => c.classList.remove('chip-active'));
+  chipEl.classList.add('chip-active');
+  // Check completeness
+  checkDiagComplete(cidInput);
+}
+
+// Real-time completeness check for a diagnosis card
+function checkDiagComplete(inputEl) {
+  const card = inputEl.closest('.diagnosis-card');
+  if (!card) return;
+  const cid = card.querySelector('.diag-cid')?.value.trim();
+  const date = card.querySelector('.diag-date')?.value.trim();
+  const desc = card.querySelector('.diag-desc')?.value.trim();
+  const statusText = card.querySelector('.diag-status-text');
+  const isComplete = cid && date && date.length === 10 && desc;
+  if (isComplete) {
+    card.classList.add('diag-complete');
+    if (statusText) statusText.textContent = 'Completo';
+  } else {
+    card.classList.remove('diag-complete');
+    if (statusText) statusText.textContent = 'Pendente';
+  }
+}
+
+// ICD-10 format validator (contracts: ^[A-TV-Z][0-9][0-9AB](\.[0-9A-TV-Z]{1,4})?$)
+function isValidICDCode(code) {
+  return /^[A-TV-Z][0-9][0-9AB](\.[0-9A-TV-Z]{1,4})?$/.test(code.toUpperCase());
+}
+
+// Step 3: Diagnosticos validation (PAT-001, ICD-001, DIA-001, DIA-003)
+function validateStep3() {
+  clearAllErrors();
+  let valid = true;
+  const cards = document.querySelectorAll('#diagList .diagnosis-card');
+
+  // PAT-001: at least one diagnosis
+  if (cards.length === 0) {
+    valid = false;
+    const globalErr = document.getElementById('diagGlobalErrorMsg');
+    if (globalErr) globalErr.textContent = 'Pelo menos um diagnostico e obrigatorio (PAT-001)';
+    return valid;
+  }
+
+  cards.forEach((card, idx) => {
+    const cidInput = card.querySelector('.diag-cid');
+    const dateInput = card.querySelector('.diag-date');
+    const descInput = card.querySelector('.diag-desc');
+    const cidVal = cidInput?.value.trim() || '';
+    const dateVal = dateInput?.value.trim() || '';
+    const descVal = descInput?.value.trim() || '';
+
+    const cidField = card.querySelector('[data-name="diagCid"]');
+    const dateField = card.querySelector('[data-name="diagDate"]');
+    const descField = card.querySelector('[data-name="diagDesc"]');
+
+    // ICD-001: CID code required
+    if (!cidVal) {
+      valid = false;
+      if (cidField) { cidField.classList.add('has-error'); cidInput?.classList.add('error'); cidField.querySelector('.field-error').textContent = 'Codigo CID obrigatorio (ICD-001)'; }
+    } else if (!isValidICDCode(cidVal)) {
+      valid = false;
+      if (cidField) { cidField.classList.add('has-error'); cidInput?.classList.add('error'); cidField.querySelector('.field-error').textContent = 'Formato CID invalido — ex: G80, F84.0'; }
+    }
+
+    // DIA-003: description required
+    if (!descVal) {
+      valid = false;
+      if (descField) { descField.classList.add('has-error'); descInput?.classList.add('error'); descField.querySelector('.field-error').textContent = 'Descricao obrigatoria (DIA-003)'; }
+    }
+
+    // Date required + DIA-001: not future
+    if (!dateVal) {
+      valid = false;
+      if (dateField) { dateField.classList.add('has-error'); dateInput?.classList.add('error'); dateField.querySelector('.field-error').textContent = 'Data obrigatoria'; }
+    } else {
+      const parts = dateVal.split('/');
+      if (parts.length !== 3 || parts[2].length !== 4) {
+        valid = false;
+        if (dateField) { dateField.classList.add('has-error'); dateInput?.classList.add('error'); dateField.querySelector('.field-error').textContent = 'Formato invalido (DD/MM/AAAA)'; }
+      } else {
+        const d = parseInt(parts[0]), m = parseInt(parts[1]), y = parseInt(parts[2]);
+        if (m < 1 || m > 12 || d < 1 || d > 31) {
+          valid = false;
+          if (dateField) { dateField.classList.add('has-error'); dateInput?.classList.add('error'); dateField.querySelector('.field-error').textContent = 'Data invalida'; }
+        } else if (new Date(y, m - 1, d) > new Date()) {
+          valid = false;
+          if (dateField) { dateField.classList.add('has-error'); dateInput?.classList.add('error'); dateField.querySelector('.field-error').textContent = 'Data nao pode ser futura (DIA-001)'; }
+        }
+      }
+    }
+  });
+
+  return valid;
+}
+
+// Masks (based on BFF feature specs)
+function maskPhone(el) {
+  let d = el.value.replace(/\D/g, '').slice(0, 11);
+  if (d.length <= 2) { el.value = d.length ? `(${d}` : ''; return; }
+  if (d.length <= 7) { el.value = `(${d.slice(0,2)}) ${d.slice(2)}`; return; }
+  el.value = `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+}
+
+// CPF mask: 000.000.000-00
+function maskCPF(el) {
+  let d = el.value.replace(/\D/g, '').slice(0, 11);
+  if (d.length <= 3) { el.value = d; return; }
+  if (d.length <= 6) { el.value = d.slice(0,3) + '.' + d.slice(3); return; }
+  if (d.length <= 9) { el.value = d.slice(0,3) + '.' + d.slice(3,6) + '.' + d.slice(6); return; }
+  el.value = d.slice(0,3) + '.' + d.slice(3,6) + '.' + d.slice(6,9) + '-' + d.slice(9);
+}
+
+// CNS mask: 000 0000 0000 0000
+function maskCNS(el) {
+  let d = el.value.replace(/\D/g, '').slice(0, 15);
+  if (d.length <= 3) { el.value = d; return; }
+  if (d.length <= 7) { el.value = d.slice(0,3) + ' ' + d.slice(3); return; }
+  if (d.length <= 11) { el.value = d.slice(0,3) + ' ' + d.slice(3,7) + ' ' + d.slice(7); return; }
+  el.value = d.slice(0,3) + ' ' + d.slice(3,7) + ' ' + d.slice(7,11) + ' ' + d.slice(11);
+}
+
+// Digits only (NIS, etc.)
+function maskDigitsOnly(el, max) {
+  el.value = el.value.replace(/\D/g, '').slice(0, max);
+}
+
+// RG mask: digits + X (check digit), e.g. 12.345.678-X
+function maskRG(el) {
+  let d = el.value.replace(/[^0-9Xx]/g, '').slice(0, 10).toUpperCase();
+  if (d.length <= 2) { el.value = d; return; }
+  if (d.length <= 5) { el.value = d.slice(0,2) + '.' + d.slice(2); return; }
+  if (d.length <= 8) { el.value = d.slice(0,2) + '.' + d.slice(2,5) + '.' + d.slice(5); return; }
+  el.value = d.slice(0,2) + '.' + d.slice(2,5) + '.' + d.slice(5,8) + '-' + d.slice(8);
+}
+
+// UF mask: 2 uppercase letters
+function maskUF(el) {
+  el.value = el.value.replace(/[^a-zA-Z]/g, '').slice(0, 2).toUpperCase();
+}
+
+// CEP mask: 00000-000
+function maskCEP(el) {
+  let d = el.value.replace(/\D/g, '').slice(0, 8);
+  if (d.length <= 5) { el.value = d; return; }
+  el.value = d.slice(0,5) + '-' + d.slice(5);
+}
+
+// Family member form
+let familyCount = 1; // 01 is the reference person
+
+// Single-select toggle cards (reusable for Sexo, Localizacao, etc.)
+function selectSingle(el) {
+  el.closest('.card-selector-group').querySelectorAll('.card-selector').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// Address location type selector — controls which fields are visible/enabled
+let selectedLocationType = null;
+
+function selectLocationType(el, type) {
+  // Select the card
+  el.closest('.card-selector-group').querySelectorAll('.card-selector').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedLocationType = type;
+
+  // Reveal the fields container with animation
+  const container = document.getElementById('addrFieldsContainer');
+  container.classList.remove('addr-fields-hidden');
+  container.classList.add('addr-fields-visible');
+
+  const stepEl = document.getElementById('stepContent');
+  const homelessHint = document.getElementById('homelessHint');
+  const ruralHint = document.getElementById('ruralHint');
+
+  // Field groups
+  const housingField = stepEl.querySelector('.addr-field-housing');
+  const cepField = stepEl.querySelector('.addr-field-cep');
+  const streetField = stepEl.querySelector('.addr-field-street');
+  const numberField = stepEl.querySelector('.addr-field-number');
+  const complementField = stepEl.querySelector('.addr-field-complement');
+  const neighborhoodField = stepEl.querySelector('.addr-field-neighborhood');
+  const shelterField = stepEl.querySelector('.addr-field-shelter');
+
+  // All address-specific fields (not state/city which are always active)
+  const addressFields = [housingField, cepField, streetField, numberField, complementField, neighborhoodField, shelterField];
+
+  // Reset all fields
+  addressFields.forEach(f => { if (f) f.classList.remove('field-disabled'); });
+  homelessHint.style.display = 'none';
+  ruralHint.style.display = 'none';
+
+  // Clear disabled inputs' values
+  const clearDisabledInputs = (fields) => {
+    fields.forEach(f => {
+      if (!f) return;
+      const input = f.querySelector('.field-input');
+      const sel = f.querySelector('.field-select');
+      if (input) input.value = '';
+      if (sel) sel.value = '';
+    });
+  };
+
+  if (type === 'URBANO') {
+    // All fields enabled
+  } else if (type === 'RURAL') {
+    // Disable Rua and Complemento
+    streetField?.classList.add('field-disabled');
+    complementField?.classList.add('field-disabled');
+    clearDisabledInputs([streetField, complementField]);
+    ruralHint.style.display = 'block';
+  } else if (type === 'RUA') {
+    // Disable everything except Estado and Cidade
+    addressFields.forEach(f => { if (f) f.classList.add('field-disabled'); });
+    clearDisabledInputs(addressFields);
+    homelessHint.style.display = 'block';
+  }
+}
+
+// dominio_parentesco lookup (UPPER_SNAKE_CASE codes from backend)
+const PARENTESCO_LOOKUP = [
+  { codigo: "PESSOA_REFERENCIA", descricao: "Pessoa de Referencia" },
+  { codigo: "CONJUGE", descricao: "Conjuge / Companheiro(a)" },
+  { codigo: "FILHO", descricao: "Filho(a)" },
+  { codigo: "ENTEADO", descricao: "Enteado(a)" },
+  { codigo: "PAI", descricao: "Pai" },
+  { codigo: "MAE", descricao: "Mae" },
+  { codigo: "AVO", descricao: "Avo / Avo" },
+  { codigo: "NETO", descricao: "Neto(a)" },
+  { codigo: "IRMAO", descricao: "Irmao / Irma" },
+  { codigo: "TIO", descricao: "Tio(a)" },
+  { codigo: "SOBRINHO", descricao: "Sobrinho(a)" },
+  { codigo: "PRIMO", descricao: "Primo(a)" },
+  { codigo: "OUTRO_PARENTE", descricao: "Outro Parente" },
+  { codigo: "NAO_PARENTE", descricao: "Nao Parente" },
+];
+
+function maskDateInput(el) {
+  let d = el.value.replace(/\D/g, '').slice(0, 8);
+  if (d.length <= 2) { el.value = d; return; }
+  if (d.length <= 4) { el.value = d.slice(0,2) + '/' + d.slice(2); return; }
+  el.value = d.slice(0,2) + '/' + d.slice(2,4) + '/' + d.slice(4);
+}
+
+function showFamilyForm() {
+  const form = document.getElementById('familyForm');
+  document.getElementById('btnAddMember').style.display = 'none';
+  form.style.display = 'block';
+  const parentescoOpts = PARENTESCO_LOOKUP
+    .filter(p => p.codigo !== 'PESSOA_REFERENCIA')
+    .map(p => `<option value="${p.codigo}">${p.codigo} \u2014 ${p.descricao}</option>`)
+    .join('');
+  form.innerHTML = `
+    <div style="border:1.5px solid var(--green-primary);border-radius:var(--r-lg);padding:var(--s5);margin-top:var(--s3);background:rgba(255,255,255,0.3);backdrop-filter:blur(12px);animation:fadeInUp var(--duration-slow) var(--ease-out) both;">
+      <div class="form-grid">
+        ${field("Nome", "fm_name", "Nome completo", true)}
+        <div class="form-field">
+          <label class="field-label">Data de nascimento</label>
+          <input class="field-input" id="fm_birth" type="text" placeholder="DD/MM/AAAA" maxlength="10" oninput="maskDateInput(this)" />
+        </div>
+        ${select("Sexo", "fm_sex", ["Masculino", "Feminino", "Outro"])}
+        <div class="form-field">
+          <label class="field-label field-required">Parentesco</label>
+          <select class="field-select" id="fm_rel"><option value="">Selecione...</option>${parentescoOpts}</select>
+        </div>
+        <div class="form-field">
+          <label class="checkbox-field">
+            <input type="checkbox" id="fm_lives" checked />
+            <span class="checkbox-box"></span>
+            Reside com o paciente
+          </label>
+        </div>
+        <div class="form-field">
+          <label class="checkbox-field">
+            <input type="checkbox" id="fm_disabled" />
+            <span class="checkbox-box"></span>
+            Pessoa com deficiencia
+          </label>
+        </div>
+      </div>
+
+      <!-- DOCUMENTOS DO MEMBRO -->
+      <div class="form-section-title" style="margin-top:var(--s5)">Documentos necessarios</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:var(--s3);line-height:1.4">Selecione os documentos que deseja informar para este membro.</p>
+      <div class="fm-doc-chips">
+        <button class="cid-chip" type="button" onclick="toggleFmDoc(this,'cpf')">CPF</button>
+        <button class="cid-chip" type="button" onclick="toggleFmDoc(this,'rg')">RG</button>
+        <button class="cid-chip" type="button" onclick="toggleFmDoc(this,'cn')">Certidao de Nascimento</button>
+        <button class="cid-chip" type="button" onclick="toggleFmDoc(this,'cns')">Carteira Nacional do SUS</button>
+        <button class="cid-chip" type="button" onclick="toggleFmDoc(this,'te')">Titulo de Eleitor</button>
+        <button class="cid-chip" type="button" onclick="toggleFmDoc(this,'ctps')">CTPS</button>
+      </div>
+      <div id="fmDocFields"></div>
+      <div class="field-error" id="fmDocError" style="margin-top:var(--s2)"></div>
+
+      <div style="display:flex;gap:var(--s3);justify-content:flex-end;margin-top:var(--s4);">
+        <button class="btn btn-secondary" onclick="cancelFamilyForm()">Cancelar</button>
+        <button class="btn btn-primary" onclick="confirmFamilyMember()">Confirmar</button>
+      </div>
+    </div>
+  `;
+}
+
+function cancelFamilyForm() {
+  document.getElementById('familyForm').style.display = 'none';
+  document.getElementById('btnAddMember').style.display = '';
+  activeFmDocs = new Set();
+}
+
+// Track which document sections are active
+let activeFmDocs = new Set();
+
+function toggleFmDoc(chipEl, docType) {
+  chipEl.classList.toggle('chip-active');
+  if (activeFmDocs.has(docType)) {
+    activeFmDocs.delete(docType);
+  } else {
+    activeFmDocs.add(docType);
+  }
+  renderFmDocFields();
+}
+
+function renderFmDocFields() {
+  const container = document.getElementById('fmDocFields');
+  let html = '';
+
+  if (activeFmDocs.has('cpf')) {
+    html += `
+      <div class="fm-doc-section" data-doc="cpf">
+        <div class="fm-doc-section-title"><span class="fm-doc-badge">CPF</span> Cadastro de Pessoa Fisica</div>
+        <div class="form-grid">
+          <div class="form-field" data-name="fmCpf">
+            <label class="field-label field-required">Numero do CPF</label>
+            <input class="field-input" id="fm_cpf" placeholder="000.000.000-00" maxlength="14" oninput="maskCPF(this)" />
+            <div class="field-error"></div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  if (activeFmDocs.has('rg')) {
+    html += `
+      <div class="fm-doc-section" data-doc="rg">
+        <div class="fm-doc-section-title"><span class="fm-doc-badge">RG</span> Registro Geral</div>
+        <div class="form-grid">
+          <div class="form-field" data-name="fmRgNumber">
+            <label class="field-label field-required">Numero</label>
+            <input class="field-input" id="fm_rg_number" placeholder="00.000.000-0" maxlength="15" oninput="maskRG(this)" />
+            <div class="field-error"></div>
+          </div>
+          <div class="form-field" data-name="fmRgUf">
+            <label class="field-label field-required">UF</label>
+            <input class="field-input" id="fm_rg_uf" placeholder="UF" maxlength="2" oninput="maskUF(this)" />
+            <div class="field-error"></div>
+          </div>
+          <div class="form-field" data-name="fmRgAgency">
+            <label class="field-label field-required">Orgao Emissor</label>
+            <input class="field-input" id="fm_rg_agency" placeholder="SSP, DETRAN..." />
+            <div class="field-error"></div>
+          </div>
+          <div class="form-field" data-name="fmRgDate">
+            <label class="field-label field-required">Data de Emissao</label>
+            <input class="field-input" id="fm_rg_date" placeholder="DD/MM/AAAA" maxlength="10" oninput="maskDateInput(this)" />
+            <div class="field-error"></div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  if (activeFmDocs.has('cn')) {
+    html += `
+      <div class="fm-doc-section" data-doc="cn">
+        <div class="fm-doc-section-title"><span class="fm-doc-badge">CN</span> Certidao de Nascimento</div>
+        <div class="form-grid">
+          <div class="form-field full" data-name="fmCnNumber">
+            <label class="field-label field-required">Matricula</label>
+            <input class="field-input" id="fm_cn_number" placeholder="000000 00 00 0000 0 00000 000 0000000 00" maxlength="39" oninput="maskCN(this)" />
+            <div class="field-error"></div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  if (activeFmDocs.has('cns')) {
+    html += `
+      <div class="fm-doc-section" data-doc="cns">
+        <div class="fm-doc-section-title"><span class="fm-doc-badge">CNS</span> Carteira Nacional do SUS</div>
+        <div class="form-grid">
+          <div class="form-field full" data-name="fmCnsNumber">
+            <label class="field-label field-required">Numero do CNS</label>
+            <input class="field-input" id="fm_cns_number" placeholder="000 0000 0000 0000" maxlength="18" oninput="maskCNS(this)" />
+            <div class="field-error"></div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  if (activeFmDocs.has('te')) {
+    html += `
+      <div class="fm-doc-section" data-doc="te">
+        <div class="fm-doc-section-title"><span class="fm-doc-badge">TE</span> Titulo de Eleitor</div>
+        <div class="form-grid">
+          <div class="form-field" data-name="fmTeNumber">
+            <label class="field-label field-required">Numero do Titulo</label>
+            <input class="field-input" id="fm_te_number" placeholder="0000 0000 0000" maxlength="14" oninput="maskTE(this)" />
+            <div class="field-error"></div>
+          </div>
+          <div class="form-field" data-name="fmTeZona">
+            <label class="field-label field-required">Zona</label>
+            <input class="field-input" id="fm_te_zona" placeholder="000" maxlength="4" oninput="maskDigitsOnly(this, 4)" />
+            <div class="field-error"></div>
+          </div>
+          <div class="form-field" data-name="fmTeSecao">
+            <label class="field-label field-required">Secao</label>
+            <input class="field-input" id="fm_te_secao" placeholder="0000" maxlength="4" oninput="maskDigitsOnly(this, 4)" />
+            <div class="field-error"></div>
+          </div>
+          <div class="form-field" data-name="fmTeUf">
+            <label class="field-label field-required">UF</label>
+            <input class="field-input" id="fm_te_uf" placeholder="UF" maxlength="2" oninput="maskUF(this)" />
+            <div class="field-error"></div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  if (activeFmDocs.has('ctps')) {
+    html += `
+      <div class="fm-doc-section" data-doc="ctps">
+        <div class="fm-doc-section-title"><span class="fm-doc-badge">CTPS</span> Carteira de Trabalho</div>
+        <div class="form-grid">
+          <div class="form-field" data-name="fmCtpsNumber">
+            <label class="field-label field-required">Numero</label>
+            <input class="field-input" id="fm_ctps_number" placeholder="0000000" maxlength="7" oninput="maskDigitsOnly(this, 7)" />
+            <div class="field-error"></div>
+          </div>
+          <div class="form-field" data-name="fmCtpsSerie">
+            <label class="field-label field-required">Serie</label>
+            <input class="field-input" id="fm_ctps_serie" placeholder="0000" maxlength="4" oninput="maskDigitsOnly(this, 4)" />
+            <div class="field-error"></div>
+          </div>
+          <div class="form-field" data-name="fmCtpsUf">
+            <label class="field-label field-required">UF</label>
+            <input class="field-input" id="fm_ctps_uf" placeholder="UF" maxlength="2" oninput="maskUF(this)" />
+            <div class="field-error"></div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+// Certidão de Nascimento mask: 000000 00 00 0000 0 00000 000 0000000 00 (32 digits)
+function maskCN(el) {
+  let d = el.value.replace(/\D/g, '').slice(0, 32);
+  // Format: XXXXXX XX XX XXXX X XXXXX XXX XXXXXXX XX
+  let parts = [];
+  if (d.length > 0) parts.push(d.slice(0, Math.min(6, d.length)));
+  if (d.length > 6) parts.push(d.slice(6, Math.min(8, d.length)));
+  if (d.length > 8) parts.push(d.slice(8, Math.min(10, d.length)));
+  if (d.length > 10) parts.push(d.slice(10, Math.min(14, d.length)));
+  if (d.length > 14) parts.push(d.slice(14, Math.min(15, d.length)));
+  if (d.length > 15) parts.push(d.slice(15, Math.min(20, d.length)));
+  if (d.length > 20) parts.push(d.slice(20, Math.min(23, d.length)));
+  if (d.length > 23) parts.push(d.slice(23, Math.min(30, d.length)));
+  if (d.length > 30) parts.push(d.slice(30, Math.min(32, d.length)));
+  el.value = parts.join(' ');
+}
+
+// Título de Eleitor mask: 0000 0000 0000 (12 digits)
+function maskTE(el) {
+  let d = el.value.replace(/\D/g, '').slice(0, 12);
+  if (d.length <= 4) { el.value = d; return; }
+  if (d.length <= 8) { el.value = d.slice(0,4) + ' ' + d.slice(4); return; }
+  el.value = d.slice(0,4) + ' ' + d.slice(4,8) + ' ' + d.slice(8);
+}
+
+// Validate family member documents (returns true if valid)
+function validateFmDocs() {
+  let valid = true;
+  const errEl = document.getElementById('fmDocError');
+  if (errEl) errEl.textContent = '';
+
+  // Helper to set error inside doc section
+  function setDocError(fieldName, msg) {
+    const field = document.querySelector(`[data-name="${fieldName}"]`);
+    if (!field) return;
+    field.classList.add('has-error');
+    const input = field.querySelector('.field-input');
+    if (input) input.classList.add('error');
+    const err = field.querySelector('.field-error');
+    if (err) err.textContent = msg;
+  }
+
+  // CPF
+  if (activeFmDocs.has('cpf')) {
+    const cpfVal = (document.getElementById('fm_cpf')?.value || '').replace(/\D/g, '');
+    if (!cpfVal) { valid = false; setDocError('fmCpf', 'CPF obrigatorio'); }
+    else if (cpfVal.length !== 11) { valid = false; setDocError('fmCpf', 'CPF deve ter 11 digitos (CPF-003)'); }
+    else if (!isValidCPF(cpfVal)) { valid = false; setDocError('fmCpf', 'CPF invalido (CPF-005)'); }
+  }
+
+  // RG — all fields required (RG-001..RG-006)
+  if (activeFmDocs.has('rg')) {
+    if (!(document.getElementById('fm_rg_number')?.value.trim())) { valid = false; setDocError('fmRgNumber', 'Numero obrigatorio (RG-001)'); }
+    if (!(document.getElementById('fm_rg_uf')?.value.trim())) { valid = false; setDocError('fmRgUf', 'UF obrigatoria (RG-004)'); }
+    if (!(document.getElementById('fm_rg_agency')?.value.trim())) { valid = false; setDocError('fmRgAgency', 'Orgao emissor obrigatorio (RG-005)'); }
+    const rgDate = document.getElementById('fm_rg_date')?.value.trim() || '';
+    if (!rgDate) { valid = false; setDocError('fmRgDate', 'Data obrigatoria (RG-006)'); }
+    else {
+      const p = rgDate.split('/');
+      if (p.length !== 3 || p[2].length !== 4) { valid = false; setDocError('fmRgDate', 'Formato invalido (DD/MM/AAAA)'); }
+      else if (new Date(parseInt(p[2]), parseInt(p[1])-1, parseInt(p[0])) > new Date()) { valid = false; setDocError('fmRgDate', 'Data nao pode ser futura'); }
+    }
+  }
+
+  // CN — matrícula 32 digits
+  if (activeFmDocs.has('cn')) {
+    const cnVal = (document.getElementById('fm_cn_number')?.value || '').replace(/\D/g, '');
+    if (!cnVal) { valid = false; setDocError('fmCnNumber', 'Matricula obrigatoria'); }
+    else if (cnVal.length !== 32) { valid = false; setDocError('fmCnNumber', 'Matricula deve ter 32 digitos'); }
+  }
+
+  // CNS — 15 digits
+  if (activeFmDocs.has('cns')) {
+    const cnsVal = (document.getElementById('fm_cns_number')?.value || '').replace(/\D/g, '');
+    if (!cnsVal) { valid = false; setDocError('fmCnsNumber', 'Numero do CNS obrigatorio'); }
+    else if (cnsVal.length !== 15) { valid = false; setDocError('fmCnsNumber', 'CNS deve ter 15 digitos'); }
+  }
+
+  // TE — all fields required
+  if (activeFmDocs.has('te')) {
+    const teNum = (document.getElementById('fm_te_number')?.value || '').replace(/\D/g, '');
+    if (!teNum) { valid = false; setDocError('fmTeNumber', 'Numero obrigatorio'); }
+    else if (teNum.length !== 12) { valid = false; setDocError('fmTeNumber', 'Titulo deve ter 12 digitos'); }
+    if (!(document.getElementById('fm_te_zona')?.value.trim())) { valid = false; setDocError('fmTeZona', 'Zona obrigatoria'); }
+    if (!(document.getElementById('fm_te_secao')?.value.trim())) { valid = false; setDocError('fmTeSecao', 'Secao obrigatoria'); }
+    if (!(document.getElementById('fm_te_uf')?.value.trim())) { valid = false; setDocError('fmTeUf', 'UF obrigatoria'); }
+  }
+
+  // CTPS — all fields required
+  if (activeFmDocs.has('ctps')) {
+    const ctpsNum = (document.getElementById('fm_ctps_number')?.value || '').replace(/\D/g, '');
+    if (!ctpsNum) { valid = false; setDocError('fmCtpsNumber', 'Numero obrigatorio'); }
+    else if (ctpsNum.length !== 7) { valid = false; setDocError('fmCtpsNumber', 'CTPS deve ter 7 digitos'); }
+    const ctpsSerie = (document.getElementById('fm_ctps_serie')?.value || '').replace(/\D/g, '');
+    if (!ctpsSerie) { valid = false; setDocError('fmCtpsSerie', 'Serie obrigatoria'); }
+    else if (ctpsSerie.length !== 4) { valid = false; setDocError('fmCtpsSerie', 'Serie deve ter 4 digitos'); }
+    if (!(document.getElementById('fm_ctps_uf')?.value.trim())) { valid = false; setDocError('fmCtpsUf', 'UF obrigatoria'); }
+  }
+
+  return valid;
+}
+
+function confirmFamilyMember() {
+  const name = document.querySelector('[placeholder="Nome completo"]')?.value || 'Novo membro';
+  const relSelect = document.getElementById('fm_rel');
+  const relCode = relSelect?.value || '';
+  const relLabel = relSelect?.options[relSelect.selectedIndex]?.text || 'Familiar';
+  const sex = document.querySelector('[name="fm_sex"]')?.value || '';
+  const lives = document.getElementById('fm_lives')?.checked;
+  const birth = document.getElementById('fm_birth')?.value || '';
+
+  let valid = true;
+  if (!name.trim()) { valid = false; }
+  if (!relCode) {
+    valid = false;
+    relSelect.style.borderColor = 'var(--danger)';
+  }
+
+  // Validate selected documents
+  if (activeFmDocs.size > 0) {
+    // Clear previous doc errors
+    document.querySelectorAll('#fmDocFields .has-error').forEach(el => el.classList.remove('has-error'));
+    document.querySelectorAll('#fmDocFields .field-input.error').forEach(el => el.classList.remove('error'));
+    document.querySelectorAll('#fmDocFields .field-error').forEach(el => el.textContent = '');
+    if (!validateFmDocs()) valid = false;
+  }
+
+  if (!valid) {
+    const firstErr = document.querySelector('#familyForm .has-error, #familyForm .field-input.error');
+    if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  familyCount++;
+  const idx = String(familyCount).padStart(2, '0');
+  const docLabels = [...activeFmDocs].map(d => d.toUpperCase()).join(', ');
+  const meta = `${relLabel} | ${sex} | ${birth ? birth : ''} | ${lives ? 'Reside' : 'Nao reside'}${docLabels ? ' | ' + docLabels : ''}`;
+
+  const row = document.createElement('div');
+  row.className = 'member-row';
+  row.style.animationDelay = '0ms';
+  row.innerHTML = `
+    <span class="member-index">${idx}</span>
+    <span class="member-name">${name}</span>
+    <span class="member-meta">${meta}</span>
+    <button class="member-remove" onclick="this.parentElement.remove()">&times;</button>
+  `;
+  document.getElementById('memberList').appendChild(row);
+  cancelFamilyForm();
+}
+
+// Draggable scenario panel
+(function() {
+  const panel = document.getElementById('scenarioPanel');
+  const handle = document.getElementById('dragHandle');
+  let isDragging = false, offsetX = 0, offsetY = 0;
+
+  handle.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    const rect = panel.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    panel.style.transition = 'none';
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    panel.style.left = (e.clientX - offsetX) + 'px';
+    panel.style.top = (e.clientY - offsetY) + 'px';
+    panel.style.right = 'auto';
+  });
+
+  document.addEventListener('mouseup', () => {
+    isDragging = false;
+    panel.style.transition = '';
+  });
+})();
+
+// Init
+renderStepper();
+renderStep();
+</script>
+</body>
+</html>

@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Social Care — Home Redesign Prototype</title>
+<style>
+@import url('https://api.fontshare.com/v2/css?f[]=erode@400,500,600,700&f[]=satoshi@400,500,600,700&display=swap');
+
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS — Sage Garden
+   ═══════════════════════════════════════════ */
+:root {
+  /* Background layers */
+  --bg-base: #F8F3EC;
+  --bg-warm: #F0E8DC;
+  --bg-sage: #E2E8DF;
+  --bg-sage-deep: #D4DDD0;
+
+  /* Glass card */
+  --bg-card: rgba(255,255,255,0.45);
+  --bg-card-hover: rgba(255,255,255,0.65);
+  --bg-card-border: rgba(255,255,255,0.6);
+  --bg-card-border-hover: rgba(79,132,72,0.2);
+
+  /* Text */
+  --text-primary: #1E2B1A;
+  --text-secondary: #3D5235;
+  --text-muted: #6B7F65;
+  --text-soft: #8B9E85;
+
+  /* Accent */
+  --green-primary: #4F8448;
+  --green-dark: #3D6A37;
+  --green-light: rgba(79,132,72,0.08);
+  --green-glow: rgba(79,132,72,0.12);
+
+  /* Semantic */
+  --danger: #C4422B;
+  --danger-light: rgba(196,66,43,0.08);
+
+  /* Sidebar */
+  --sidebar-bg: rgba(255,255,255,0.3);
+  --sidebar-border: rgba(79,132,72,0.08);
+  --sidebar-width: 64px;
+  --sidebar-expanded: 220px;
+
+  /* Typography */
+  --font-display: 'Erode', Georgia, serif;
+  --font-body: 'Satoshi', system-ui, -apple-system, sans-serif;
+
+  /* Spacing (8px base) */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px;
+  --s6: 32px; --s7: 40px; --s8: 48px; --s9: 64px; --s10: 80px;
+
+  /* Radius */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+  --r-pill: 100px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+  --duration-panel: 450ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ═══════════════════════════════════════════
+   RESET & BASE
+   ═══════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--green-primary);
+  color: #fff;
+}
+
+/* ═══════════════════════════════════════════
+   BACKGROUND DECORATION
+   ═══════════════════════════════════════════ */
+.bg-gradient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(155deg, var(--bg-base) 0%, var(--bg-warm) 25%, var(--bg-sage) 55%, var(--bg-sage-deep) 100%);
+}
+
+.bg-blob-1 {
+  position: fixed;
+  top: -15%;
+  right: -10%;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(79,132,72,0.07) 0%, transparent 70%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.bg-blob-2 {
+  position: fixed;
+  bottom: -20%;
+  left: -5%;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(180,160,100,0.05) 0%, transparent 70%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════
+   APP LAYOUT
+   ═══════════════════════════════════════════ */
+.app {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ═══════════════════════════════════════════
+   ICON SIDEBAR
+   ═══════════════════════════════════════════ */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--sidebar-width);
+  background: var(--sidebar-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid var(--sidebar-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+  z-index: 40;
+  transition: width var(--duration-normal) var(--ease-out);
+  overflow: hidden;
+}
+
+.sidebar:hover {
+  width: var(--sidebar-expanded);
+}
+
+.sidebar-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--green-primary), var(--green-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.sidebar-brand {
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: all var(--duration-normal) var(--ease-out);
+  margin-bottom: 32px;
+}
+
+.sidebar:hover .sidebar-brand {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 0 12px;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast) ease;
+  text-decoration: none;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.sidebar-item:hover {
+  background: var(--green-light);
+  color: var(--text-secondary);
+}
+
+.sidebar-item.active {
+  background: var(--green-light);
+  color: var(--green-primary);
+}
+
+.sidebar-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 16px;
+}
+
+.sidebar-label {
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+.sidebar:hover .sidebar-label {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.sidebar-badge {
+  margin-left: auto;
+  background: var(--green-primary);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: var(--r-pill);
+  opacity: 0;
+  transition: opacity var(--duration-normal) var(--ease-out);
+}
+
+.sidebar:hover .sidebar-badge {
+  opacity: 1;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  width: 100%;
+}
+
+.sidebar-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--bg-sage), var(--bg-sage-deep));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--green-dark);
+  flex-shrink: 0;
+}
+
+.sidebar-username {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity var(--duration-normal) var(--ease-out);
+}
+
+.sidebar:hover .sidebar-username {
+  opacity: 1;
+}
+
+/* ═══════════════════════════════════════════
+   MAIN CONTENT
+   ═══════════════════════════════════════════ */
+.main-content {
+  margin-left: var(--sidebar-width);
+  flex: 1;
+  padding: 40px 48px;
+  max-width: 1000px;
+  position: relative;
+  transition: margin-left var(--duration-normal) var(--ease-out);
+}
+
+/* ═══════════════════════════════════════════
+   PAGE HEADER
+   ═══════════════════════════════════════════ */
+.page-header {
+  margin-bottom: 36px;
+}
+
+.page-header-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.page-counter {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-top: 6px;
+}
+
+.page-counter strong {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Search */
+.search-box {
+  position: relative;
+  width: 280px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 16px 10px 40px;
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--bg-card-border);
+  border-radius: var(--r-pill);
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text-primary);
+  outline: none;
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+.search-input::placeholder {
+  color: var(--text-soft);
+  font-style: italic;
+}
+
+.search-input:focus {
+  border-color: var(--bg-card-border-hover);
+  box-shadow: 0 0 0 3px rgba(79,132,72,0.08);
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: var(--text-soft);
+  pointer-events: none;
+}
+
+/* CTA Button */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, var(--green-primary), var(--green-dark));
+  color: #fff;
+  border: none;
+  border-radius: var(--r-pill);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-out);
+  box-shadow: 0 2px 12px rgba(79,132,72,0.2);
+  text-decoration: none;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(79,132,72,0.3);
+}
+
+/* ═══════════════════════════════════════════
+   COLUMN HEADER
+   ═══════════════════════════════════════════ */
+.list-header {
+  display: flex;
+  align-items: center;
+  padding: 0 22px 12px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-soft);
+}
+
+.list-header span:first-child { flex: 1; }
+.list-header span:nth-child(2) { width: 100px; text-align: right; }
+.list-header span:nth-child(3) { width: 80px; text-align: right; }
+
+/* ═══════════════════════════════════════════
+   FAMILY LIST CONTAINER
+   ═══════════════════════════════════════════ */
+.family-list-container {
+  transition: margin-right var(--duration-panel) var(--ease-standard);
+}
+
+.family-list-container.with-panel {
+  margin-right: 46%;
+}
+
+/* ═══════════════════════════════════════════
+   GLASS FAMILY CARDS
+   ═══════════════════════════════════════════ */
+.family-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.family-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--bg-card-border);
+  border-radius: var(--r-lg);
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-out);
+  opacity: 0;
+  transform: translateY(8px);
+  animation: cardFadeIn var(--duration-slow) var(--ease-out) forwards;
+}
+
+.family-card:nth-child(1) { animation-delay: 0ms; }
+.family-card:nth-child(2) { animation-delay: 60ms; }
+.family-card:nth-child(3) { animation-delay: 120ms; }
+.family-card:nth-child(4) { animation-delay: 180ms; }
+.family-card:nth-child(5) { animation-delay: 240ms; }
+.family-card:nth-child(6) { animation-delay: 300ms; }
+.family-card:nth-child(7) { animation-delay: 360ms; }
+.family-card:nth-child(8) { animation-delay: 420ms; }
+.family-card:nth-child(9) { animation-delay: 480ms; }
+.family-card:nth-child(10) { animation-delay: 540ms; }
+.family-card:nth-child(11) { animation-delay: 600ms; }
+.family-card:nth-child(12) { animation-delay: 660ms; }
+
+@keyframes cardFadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.family-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--bg-card-border-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(79,132,72,0.06);
+}
+
+.family-card.selected {
+  background: var(--bg-card-hover);
+  border-color: var(--bg-card-border-hover);
+  box-shadow: 0 4px 20px rgba(79,132,72,0.08);
+}
+
+/* Inactive card variant */
+.family-card.inactive-card {
+  opacity: 0;
+  animation: cardFadeInInactive var(--duration-slow) var(--ease-out) forwards;
+}
+
+@keyframes cardFadeInInactive {
+  to {
+    opacity: 0.7;
+    transform: translateY(0);
+  }
+}
+
+.family-card.inactive-card:hover {
+  opacity: 0.85;
+}
+
+.family-card.inactive-card .card-name,
+.family-card.inactive-card .card-diagnosis,
+.family-card.inactive-card .card-members {
+  opacity: 0.6;
+}
+
+.family-card.inactive-card:hover .card-name,
+.family-card.inactive-card:hover .card-diagnosis,
+.family-card.inactive-card:hover .card-members {
+  opacity: 0.85;
+}
+
+/* Index */
+.card-index {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-soft);
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* Info */
+.card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-name {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-diagnosis {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Members */
+.card-members {
+  font-size: 12px;
+  color: var(--text-soft);
+  width: 100px;
+  text-align: right;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.card-members strong {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* Status */
+.card-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 80px;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot.active { background: var(--green-primary); }
+.status-dot.inactive { background: var(--danger); }
+
+.status-text {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.status-text.active { color: var(--green-primary); }
+.status-text.inactive { color: var(--danger); }
+
+/* Mobile meta row (hidden on desktop) */
+.card-meta { display: none; }
+
+/* ═══════════════════════════════════════════
+   DETAIL PANEL — Glass Morphism
+   ═══════════════════════════════════════════ */
+.detail-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 44%;
+  overflow: hidden;
+  background: rgba(255,255,255,0.35);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-left: 1px solid var(--bg-card-border);
+  transform: translateX(100%);
+  transition: transform var(--duration-panel) var(--ease-standard);
+  z-index: 30;
+}
+
+.detail-panel.open {
+  transform: translateX(0);
+}
+
+.detail-panel-inner {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  opacity: 0;
+  transform: translateX(20px);
+  transition: opacity var(--duration-slow) var(--ease-out) 100ms,
+              transform var(--duration-slow) var(--ease-out) 100ms;
+}
+
+.detail-panel.open .detail-panel-inner {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.detail-header {
+  padding: var(--s5) var(--s5) var(--s4);
+  border-bottom: 1px solid rgba(79,132,72,0.1);
+}
+
+.detail-header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: var(--s4);
+}
+
+.detail-name {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+.detail-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--bg-card-border);
+  background: rgba(255,255,255,0.4);
+  color: var(--text-secondary);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--duration-fast) var(--ease-out);
+  flex-shrink: 0;
+}
+
+.detail-close:hover {
+  background: rgba(255,255,255,0.6);
+  border-color: var(--bg-card-border-hover);
+  color: var(--text-primary);
+}
+
+.detail-subtitle {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 14px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: var(--s3);
+}
+
+/* Panel Tabs */
+.panel-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid rgba(79,132,72,0.1);
+}
+
+.panel-tab {
+  flex: 1;
+  padding: var(--s3) var(--s4);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-soft);
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: color var(--duration-normal) var(--ease-out);
+}
+
+.panel-tab:hover {
+  color: var(--text-secondary);
+}
+
+.panel-tab.active {
+  color: var(--green-primary);
+}
+
+.panel-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: var(--s4);
+  right: var(--s4);
+  height: 2px;
+  background: var(--green-primary);
+  border-radius: 1px;
+}
+
+/* Panel Content */
+.panel-body {
+  padding: var(--s4) var(--s5);
+}
+
+.data-section {
+  margin-bottom: var(--s5);
+}
+
+.data-section-title {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-soft);
+  margin-bottom: var(--s3);
+  padding-bottom: var(--s2);
+  border-bottom: 1px solid rgba(79,132,72,0.08);
+}
+
+.data-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s3) var(--s5);
+}
+
+.data-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.data-field.full-width {
+  grid-column: 1 / -1;
+}
+
+.data-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-soft);
+}
+
+.data-value {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.data-value.empty {
+  color: var(--text-soft);
+  font-style: italic;
+}
+
+/* Fichas */
+.fichas-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.ficha-item {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s3) 0;
+  border-bottom: 1px solid rgba(79,132,72,0.06);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.ficha-item:hover {
+  padding-left: var(--s2);
+}
+
+.ficha-number {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-soft);
+  min-width: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ficha-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.ficha-item:hover .ficha-name {
+  color: var(--text-primary);
+}
+
+.ficha-status {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: var(--r-pill);
+}
+
+.ficha-status.filled {
+  background: rgba(79,132,72,0.1);
+  color: var(--green-primary);
+}
+
+.ficha-status.pending {
+  background: rgba(107,127,101,0.08);
+  color: var(--text-soft);
+}
+
+.ficha-arrow {
+  font-size: 14px;
+  color: var(--text-soft);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.ficha-item:hover .ficha-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ═══════════════════════════════════════════
+   SCENARIO PANEL (prototype controls)
+   ═══════════════════════════════════════════ */
+.scenario-panel {
+  position: fixed;
+  top: var(--s3);
+  right: var(--s3);
+  background: rgba(30, 43, 26, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(79,132,72,0.2);
+  border-radius: var(--r-lg);
+  padding: var(--s3);
+  z-index: 1000;
+  min-width: 200px;
+  cursor: default;
+  user-select: none;
+}
+
+.scenario-panel .drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: grab;
+  margin-bottom: var(--s2);
+}
+
+.scenario-panel .drag-handle:active { cursor: grabbing; }
+
+.scenario-panel .drag-handle h3 { margin-bottom: 0; }
+
+.scenario-panel .drag-dots {
+  color: rgba(255,255,255,0.3);
+  font-size: 14px;
+  letter-spacing: 2px;
+  line-height: 1;
+}
+
+.scenario-panel h3 {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: var(--s2);
+}
+
+.scenario-btn {
+  display: block;
+  width: 100%;
+  padding: var(--s2) var(--s3);
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+  background: none;
+  border: none;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.scenario-btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.9);
+}
+
+.scenario-btn.active {
+  background: rgba(79,132,72,0.3);
+  color: #a8d4a2;
+}
+
+/* ═══════════════════════════════════════════
+   EMPTY STATE
+   ═══════════════════════════════════════════ */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s10) var(--s5);
+  text-align: center;
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  color: var(--text-soft);
+  margin-bottom: var(--s4);
+  opacity: 0.4;
+}
+
+.empty-state-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: var(--s2);
+}
+
+.empty-state-desc {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--text-muted);
+  max-width: 280px;
+}
+
+/* ═══════════════════════════════════════════
+   SKELETON LOADING
+   ═══════════════════════════════════════════ */
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, rgba(79,132,72,0.04) 25%, rgba(79,132,72,0.08) 50%, rgba(79,132,72,0.04) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.8s infinite ease-in-out;
+  border-radius: var(--r-sm);
+}
+
+.skeleton-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--bg-card-border);
+  border-radius: var(--r-lg);
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.skeleton-line {
+  height: 12px;
+}
+
+.skeleton-line.short { width: 60%; }
+.skeleton-line.tiny { width: 40%; }
+
+.skeleton-index { width: 16px; height: 12px; }
+
+/* ═══════════════════════════════════════════
+   SCROLLBAR
+   ═══════════════════════════════════════════ */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(79,132,72,0.15);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(79,132,72,0.25);
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════ */
+@media (max-width: 1200px) {
+  .detail-panel { width: 50%; }
+  .family-list-container.with-panel { margin-right: 50%; }
+}
+
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+
+  .main-content {
+    margin-left: 0;
+    padding: 24px 20px;
+  }
+
+  .page-title { font-size: 32px; }
+  .search-box { width: 100%; }
+  .header-actions { flex-wrap: wrap; }
+  .list-header { display: none; }
+
+  .card-members, .card-status { display: none; }
+
+  .card-meta {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--text-soft);
+  }
+
+  .card-meta .status-dot { width: 6px; height: 6px; }
+
+  .family-card {
+    flex-wrap: wrap;
+  }
+
+  .detail-panel {
+    width: 100%;
+    position: fixed;
+    z-index: 50;
+  }
+
+  .family-list-container.with-panel {
+    margin-right: 0;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- Background -->
+<div class="bg-gradient"></div>
+<div class="bg-blob-1"></div>
+<div class="bg-blob-2"></div>
+
+<div class="app">
+  <!-- Icon Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">C</div>
+    <div class="sidebar-brand">Conecta</div>
+
+    <div class="sidebar-nav">
+      <a class="sidebar-item active" href="/prototype-home-redesign.html">
+        <span class="sidebar-icon">&#9776;</span>
+        <span class="sidebar-label">Familias</span>
+        <span class="sidebar-badge" id="familyCount">42</span>
+      </a>
+      <a class="sidebar-item" href="/prototype-registration-redesign.html">
+        <span class="sidebar-icon">&#43;</span>
+        <span class="sidebar-label">Cadastro</span>
+      </a>
+      <a class="sidebar-item" href="#">
+        <span class="sidebar-icon">&#9638;</span>
+        <span class="sidebar-label">Relatorios</span>
+      </a>
+      <a class="sidebar-item" href="#">
+        <span class="sidebar-icon">&#9881;</span>
+        <span class="sidebar-label">Config</span>
+      </a>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-avatar">DF</div>
+      <div class="sidebar-username">Davi Franklin</div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-header-top">
+        <div>
+          <h1 class="page-title">Familias</h1>
+          <p class="page-counter"><strong id="headerCount">42</strong> cadastradas</p>
+        </div>
+        <div class="header-actions">
+          <div class="search-box">
+            <span class="search-icon">&#128269;</span>
+            <input class="search-input" type="text" placeholder="Buscar por nome, CPF..." />
+          </div>
+          <a href="/prototype-registration-redesign.html" class="btn-primary" style="text-decoration:none;">
+            <span>&#43;</span>
+            Novo Cadastro
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Column Header -->
+    <div class="list-header">
+      <span>Referencia / Diagnostico</span>
+      <span>Membros</span>
+      <span>Status</span>
+    </div>
+
+    <!-- Family List -->
+    <div class="family-list-container" id="familyList">
+      <div class="family-list" id="listContent">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- Detail Panel -->
+    <div class="detail-panel" id="detailPanel">
+      <div class="detail-panel-inner">
+        <div class="detail-header">
+          <div class="detail-header-top">
+            <div>
+              <h3 class="detail-name" id="detailName">Maria Silva</h3>
+              <p class="detail-subtitle" id="detailDiagnosis">Paralisia cerebral (G80)</p>
+            </div>
+            <button class="detail-close" onclick="closePanel()">&times;</button>
+          </div>
+        </div>
+
+        <div class="panel-tabs">
+          <button class="panel-tab active" onclick="switchTab('dados', this)">Dados</button>
+          <button class="panel-tab" onclick="switchTab('fichas', this)">Fichas</button>
+        </div>
+
+        <!-- Dados View -->
+        <div class="panel-body" id="dadosView">
+          <div class="data-section">
+            <div class="data-section-title">Dados Pessoais</div>
+            <div class="data-grid">
+              <div class="data-field">
+                <span class="data-label">Nome Completo</span>
+                <span class="data-value">Maria Aparecida Silva</span>
+              </div>
+              <div class="data-field">
+                <span class="data-label">Data de Nascimento</span>
+                <span class="data-value">15/03/1985</span>
+              </div>
+              <div class="data-field">
+                <span class="data-label">CPF</span>
+                <span class="data-value">123.456.789-00</span>
+              </div>
+              <div class="data-field">
+                <span class="data-label">Telefone</span>
+                <span class="data-value">(11) 98765-4321</span>
+              </div>
+              <div class="data-field full-width">
+                <span class="data-label">Nome da Mae</span>
+                <span class="data-value">Joana Aparecida Silva</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="data-section">
+            <div class="data-section-title">Endereco</div>
+            <div class="data-grid">
+              <div class="data-field full-width">
+                <span class="data-label">Logradouro</span>
+                <span class="data-value">Rua das Flores, 123 — Jardim Primavera</span>
+              </div>
+              <div class="data-field">
+                <span class="data-label">Cidade</span>
+                <span class="data-value">Sao Paulo</span>
+              </div>
+              <div class="data-field">
+                <span class="data-label">CEP</span>
+                <span class="data-value">01234-567</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fichas View -->
+        <div class="panel-body" id="fichasView" style="display: none;">
+          <div class="fichas-list">
+            <div class="ficha-item" onclick="void(0)">
+              <span class="ficha-number">01</span>
+              <span class="ficha-name">Composicao familiar</span>
+              <span class="ficha-status filled">Preenchida</span>
+              <span class="ficha-arrow">&rarr;</span>
+            </div>
+            <div class="ficha-item">
+              <span class="ficha-number">02</span>
+              <span class="ficha-name">Acesso a beneficios eventuais</span>
+              <span class="ficha-status pending">Pendente</span>
+              <span class="ficha-arrow">&rarr;</span>
+            </div>
+            <div class="ficha-item">
+              <span class="ficha-number">03</span>
+              <span class="ficha-name">Condicoes de saude da familia</span>
+              <span class="ficha-status pending">Pendente</span>
+              <span class="ficha-arrow">&rarr;</span>
+            </div>
+            <div class="ficha-item">
+              <span class="ficha-number">04</span>
+              <span class="ficha-name">Convivencia familiar e comunitaria</span>
+              <span class="ficha-status filled">Preenchida</span>
+              <span class="ficha-arrow">&rarr;</span>
+            </div>
+            <div class="ficha-item">
+              <span class="ficha-number">05</span>
+              <span class="ficha-name">Condicoes educacionais da familia</span>
+              <span class="ficha-status pending">Pendente</span>
+              <span class="ficha-arrow">&rarr;</span>
+            </div>
+            <div class="ficha-item">
+              <span class="ficha-number">06</span>
+              <span class="ficha-name">Situacoes de violencia e violacao de direitos</span>
+              <span class="ficha-status pending">Pendente</span>
+              <span class="ficha-arrow">&rarr;</span>
+            </div>
+            <div class="ficha-item">
+              <span class="ficha-number">07</span>
+              <span class="ficha-name">Condicoes de trabalho e rendimento</span>
+              <span class="ficha-status filled">Preenchida</span>
+              <span class="ficha-arrow">&rarr;</span>
+            </div>
+            <div class="ficha-item">
+              <span class="ficha-number">08</span>
+              <span class="ficha-name">Especificidades sociais, etnicas ou culturais</span>
+              <span class="ficha-status pending">Pendente</span>
+              <span class="ficha-arrow">&rarr;</span>
+            </div>
+            <div class="ficha-item">
+              <span class="ficha-number">09</span>
+              <span class="ficha-name">Forma de ingresso e motivo do atendimento</span>
+              <span class="ficha-status filled">Preenchida</span>
+              <span class="ficha-arrow">&rarr;</span>
+            </div>
+            <div class="ficha-item">
+              <span class="ficha-number">10</span>
+              <span class="ficha-name">Condicoes habitacionais da familia</span>
+              <span class="ficha-status pending">Pendente</span>
+              <span class="ficha-arrow">&rarr;</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scenario Controls -->
+<div class="scenario-panel" id="scenarioPanel">
+  <div class="drag-handle" id="dragHandle">
+    <h3>Cenarios</h3>
+    <span class="drag-dots">&#10303;</span>
+  </div>
+  <button class="scenario-btn active" onclick="showScenario('normal')">Normal (com dados)</button>
+  <button class="scenario-btn" onclick="showScenario('loading')">Loading</button>
+  <button class="scenario-btn" onclick="showScenario('empty')">Vazio</button>
+  <button class="scenario-btn" onclick="showScenario('search')">Busca sem resultado</button>
+</div>
+
+<script>
+const families = [
+  { name: "Silva, Maria Aparecida", diagnosis: "Paralisia cerebral (G80)", members: 5, status: "active" },
+  { name: "Santos, Joao Pedro", diagnosis: "Sindrome de Down (Q90)", members: 3, status: "active" },
+  { name: "Oliveira, Ana Carolina", diagnosis: "Autismo infantil (F84.0)", members: 4, status: "active" },
+  { name: "Costa, Roberto Carlos", diagnosis: "Distrofia muscular (G71.0)", members: 6, status: "inactive" },
+  { name: "Pereira, Lucia Helena", diagnosis: "Fenilcetonuria (E70)", members: 2, status: "active" },
+  { name: "Rodrigues, Fernando", diagnosis: "Paralisia cerebral (G80)", members: 4, status: "active" },
+  { name: "Almeida, Patricia", diagnosis: "Autismo infantil (F84.0)", members: 3, status: "active" },
+  { name: "Ferreira, Jose Marcos", diagnosis: "Sindrome de Down (Q90)", members: 5, status: "inactive" },
+];
+
+let selectedIndex = -1;
+
+function renderFamilies() {
+  const container = document.getElementById('listContent');
+  container.innerHTML = families.map((f, i) => {
+    const selClass = i === selectedIndex ? 'selected' : '';
+    const inactiveClass = f.status === 'inactive' ? 'inactive-card' : '';
+    const statusText = f.status === 'active' ? 'Ativo' : 'Inativo';
+    const memberWord = f.members === 1 ? 'membro' : 'membros';
+    return `
+    <div class="family-card ${selClass} ${inactiveClass}" onclick="selectFamily(${i})">
+      <span class="card-index">${String(i + 1).padStart(2, '0')}</span>
+      <div class="card-info" data-meta="${f.members} ${memberWord} · ${statusText}">
+        <div class="card-name">${f.name}</div>
+        <div class="card-diagnosis">${f.diagnosis}</div>
+      </div>
+      <span class="card-members"><strong>${f.members}</strong> ${memberWord}</span>
+      <div class="card-status">
+        <span class="status-dot ${f.status}"></span>
+        <span class="status-text ${f.status}">${statusText}</span>
+      </div>
+      <div class="card-meta">
+        <span>${f.members} ${memberWord}</span>
+        <span style="display:flex;align-items:center;gap:6px;">
+          <span class="status-dot ${f.status}"></span>
+          <span class="status-text ${f.status}">${statusText}</span>
+        </span>
+      </div>
+    </div>`;
+  }).join('');
+  // Sync header counter
+  const headerCount = document.getElementById('headerCount');
+  if (headerCount) headerCount.textContent = families.length;
+}
+
+function selectFamily(index) {
+  if (selectedIndex === index) {
+    closePanel();
+    return;
+  }
+  selectedIndex = index;
+  const family = families[index];
+  document.getElementById('detailName').textContent = family.name.split(', ').reverse().join(' ');
+  document.getElementById('detailDiagnosis').textContent = family.diagnosis;
+  document.getElementById('detailPanel').classList.add('open');
+  document.getElementById('familyList').classList.add('with-panel');
+  renderFamilies();
+}
+
+function closePanel() {
+  selectedIndex = -1;
+  document.getElementById('detailPanel').classList.remove('open');
+  document.getElementById('familyList').classList.remove('with-panel');
+  renderFamilies();
+}
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('dadosView').style.display = tab === 'dados' ? 'block' : 'none';
+  document.getElementById('fichasView').style.display = tab === 'fichas' ? 'block' : 'none';
+}
+
+function showScenario(scenario) {
+  document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  closePanel();
+
+  const container = document.getElementById('listContent');
+
+  switch (scenario) {
+    case 'normal':
+      renderFamilies();
+      break;
+
+    case 'loading':
+      container.innerHTML = Array.from({ length: 6 }, () => `
+        <div class="skeleton-card">
+          <div class="skeleton skeleton-index"></div>
+          <div style="display:flex;flex-direction:column;gap:6px;flex:1">
+            <div class="skeleton skeleton-line short"></div>
+            <div class="skeleton skeleton-line tiny"></div>
+          </div>
+          <div class="skeleton skeleton-line" style="width:60px"></div>
+          <div class="skeleton skeleton-line tiny" style="width:50px"></div>
+        </div>
+      `).join('');
+      break;
+
+    case 'empty':
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">&#9673;</div>
+          <div class="empty-state-title">Nenhuma familia cadastrada</div>
+          <div class="empty-state-desc">Comece adicionando o primeiro cadastro usando o botao abaixo.</div>
+        </div>
+      `;
+      break;
+
+    case 'search':
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">&#8981;</div>
+          <div class="empty-state-title">Nenhum resultado</div>
+          <div class="empty-state-desc">Nenhuma familia encontrada para o termo buscado. Tente outro nome ou CPF.</div>
+        </div>
+      `;
+      break;
+  }
+}
+
+// Load registrations from localStorage (shared with registration page)
+function loadRegisteredFamilies() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('conecta_registrations') || '[]');
+    saved.forEach(reg => {
+      if (!families.find(f => f.name === reg.name)) {
+        families.push(reg);
+      }
+    });
+    document.getElementById('familyCount').textContent = families.length;
+  } catch (_) { /* ignore parse errors */ }
+}
+
+loadRegisteredFamilies();
+
+// Draggable scenario panel
+(function() {
+  const panel = document.getElementById('scenarioPanel');
+  const handle = document.getElementById('dragHandle');
+  let isDragging = false, offsetX = 0, offsetY = 0;
+
+  handle.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    const rect = panel.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    panel.style.transition = 'none';
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    panel.style.left = (e.clientX - offsetX) + 'px';
+    panel.style.top = (e.clientY - offsetY) + 'px';
+    panel.style.right = 'auto';
+  });
+
+  document.addEventListener('mouseup', () => {
+    isDragging = false;
+    panel.style.transition = '';
+  });
+})();
+
+// Initial render
+renderFamilies();
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closePanel();
+});
+</script>
+</body>
+</html>
