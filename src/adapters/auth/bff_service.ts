@@ -30,8 +30,20 @@ type TokenResponse = Readonly<{
   token_type: string;
 }>;
 
-/** Zitadel roles claim key. */
-const ROLES_CLAIM_KEY = "urn:zitadel:iam:org:project:roles";
+/** Matches Zitadel roles claim with or without project ID. */
+const ROLES_CLAIM_PATTERN = /^urn:zitadel:iam:org:project:(?:\d+:)?roles$/;
+
+/** Finds the roles claim in a JWT payload, handling both formats. */
+const findRolesClaim = (
+  payload: Readonly<Record<string, unknown>>,
+): Readonly<Record<string, unknown>> | undefined => {
+  const key = Object.keys(payload).find((k) => ROLES_CLAIM_PATTERN.test(k));
+  if (!key) return undefined;
+  const value = payload[key];
+  return typeof value === "object" && value !== null
+    ? value as Readonly<Record<string, unknown>>
+    : undefined;
+};
 
 type JWTPayload = Readonly<{
   sub: string;
@@ -41,7 +53,7 @@ type JWTPayload = Readonly<{
   iss?: string;
   aud?: string | readonly string[];
   exp?: number;
-  [ROLES_CLAIM_KEY]?: Readonly<Record<string, unknown>>;
+  [key: string]: unknown;
 }>;
 
 export type BFFAuthService = Readonly<{
@@ -420,7 +432,7 @@ export const createBFFAuthService = (
           payload.name ?? payload.preferred_username ?? payload.email ?? "unknown";
 
         // Extract roles from Zitadel claim
-        const rolesClaim = payload[ROLES_CLAIM_KEY];
+        const rolesClaim = findRolesClaim(payload as unknown as Readonly<Record<string, unknown>>);
         if (rolesClaim !== undefined) {
           roles = Object.keys(rolesClaim);
         }
@@ -513,7 +525,7 @@ export const createBFFAuthService = (
         newIdToken = tokenData.id_token;
         const decodeResult = decodeIdTokenPayload(tokenData.id_token);
         if (decodeResult.ok) {
-          const rolesClaim = decodeResult.value[ROLES_CLAIM_KEY];
+          const rolesClaim = findRolesClaim(decodeResult.value as unknown as Readonly<Record<string, unknown>>);
           if (rolesClaim !== undefined) {
             newRoles = Object.keys(rolesClaim);
           }
