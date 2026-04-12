@@ -195,6 +195,22 @@ export const AdminHubPage: FC = () => {
     loadTab(state.activeTab, dispatch, state.selectedTable);
   };
 
+  const loadingMessage: Record<AdminTab, string> = {
+    dashboard: S.loadingDashboard,
+    pessoas: S.loadingPeople,
+    lookups: S.loadingLookups,
+    solicitacoes: S.loadingRequests,
+    auditoria: S.loadingAudit,
+  };
+
+  const errorMessage: Record<AdminTab, string> = {
+    dashboard: state.dashboardError ?? S.errorDashboard,
+    pessoas: state.peopleError ?? S.errorPeople,
+    lookups: state.lookupsError ?? S.errorLookups,
+    solicitacoes: state.requestsError ?? S.errorRequests,
+    auditoria: state.auditError ?? S.errorAudit,
+  };
+
   const status = getTabStatus(state, state.activeTab);
 
   return (
@@ -206,10 +222,12 @@ export const AdminHubPage: FC = () => {
         pendingCount={pendingRequestCount(state)}
         onSelectTab={handleTabChange}
       />
-      {status === "loading" && <LoadingState message={S.loadingDashboard} />}
+      {status === "loading" && (
+        <LoadingState message={loadingMessage[state.activeTab]} />
+      )}
       {status === "error" && (
         <ErrorState
-          message={state.dashboardError ?? S.errorDashboard}
+          message={errorMessage[state.activeTab]}
           retryLabel={S.errorRetry}
           onRetry={handleRetry}
         />
