@@ -1,7 +1,10 @@
 // Admin Hub ViewModel — State types, action union, and initial state.
 // Pure state management for the 5-tab admin panel.
 
-import type { LookupEntry, LookupRequest } from "../../services/lookup-admin-service.ts";
+import type {
+  LookupEntry,
+  LookupRequest,
+} from "../../services/lookup-admin-service.ts";
 import type { Person, SystemRole } from "../../services/people-service.ts";
 
 // ---------------------------------------------------------------------------
@@ -130,38 +133,34 @@ export type AdminState = Readonly<{
 export type AdminAction =
   // Navigation
   | Readonly<{ type: "SET_TAB"; tab: AdminTab }>
-
   // Dashboard
   | Readonly<{ type: "LOAD_STATS_START" }>
   | Readonly<{ type: "LOAD_STATS_SUCCESS"; stats: DashboardStats }>
   | Readonly<{ type: "LOAD_STATS_FAILURE"; error: string }>
-
   // People
   | Readonly<{ type: "LOAD_PEOPLE_START" }>
   | Readonly<{ type: "LOAD_PEOPLE_SUCCESS"; people: readonly Person[] }>
   | Readonly<{ type: "LOAD_PEOPLE_FAILURE"; error: string }>
   | Readonly<{ type: "CREATE_PERSON_SUCCESS"; person: Person }>
   | Readonly<{ type: "UPDATE_PERSON_SUCCESS"; person: Person }>
-
   // Lookups
   | Readonly<{ type: "LOAD_LOOKUPS_START" }>
   | Readonly<{ type: "LOAD_LOOKUPS_SUCCESS"; entries: readonly LookupEntry[] }>
   | Readonly<{ type: "LOAD_LOOKUPS_FAILURE"; error: string }>
   | Readonly<{ type: "SELECT_TABLE"; tableName: string }>
   | Readonly<{ type: "TOGGLE_ENTRY_SUCCESS"; entry: LookupEntry }>
-
   // Requests
   | Readonly<{ type: "LOAD_REQUESTS_START" }>
-  | Readonly<{ type: "LOAD_REQUESTS_SUCCESS"; requests: readonly LookupRequest[] }>
+  | Readonly<
+    { type: "LOAD_REQUESTS_SUCCESS"; requests: readonly LookupRequest[] }
+  >
   | Readonly<{ type: "LOAD_REQUESTS_FAILURE"; error: string }>
   | Readonly<{ type: "APPROVE_REQUEST_SUCCESS"; request: LookupRequest }>
   | Readonly<{ type: "REJECT_REQUEST_SUCCESS"; request: LookupRequest }>
-
   // Audit
   | Readonly<{ type: "LOAD_AUDIT_START" }>
   | Readonly<{ type: "LOAD_AUDIT_SUCCESS"; entries: readonly AuditEntry[] }>
   | Readonly<{ type: "LOAD_AUDIT_FAILURE"; error: string }>
-
   // Toast
   | Readonly<{ type: "SHOW_TOAST"; toast: Toast }>
   | Readonly<{ type: "DISMISS_TOAST"; toastId: string }>;

@@ -27,7 +27,11 @@ export const adminReducer = (
     case "LOAD_STATS_SUCCESS":
       return { ...state, dashboardStatus: "loaded", stats: action.stats };
     case "LOAD_STATS_FAILURE":
-      return { ...state, dashboardStatus: "error", dashboardError: action.error };
+      return {
+        ...state,
+        dashboardStatus: "error",
+        dashboardError: action.error,
+      };
 
     // -- People --
     case "LOAD_PEOPLE_START":
@@ -52,7 +56,11 @@ export const adminReducer = (
     case "LOAD_LOOKUPS_START":
       return { ...state, lookupsStatus: "loading", lookupsError: null };
     case "LOAD_LOOKUPS_SUCCESS":
-      return { ...state, lookupsStatus: "loaded", lookupEntries: action.entries };
+      return {
+        ...state,
+        lookupsStatus: "loaded",
+        lookupEntries: action.entries,
+      };
     case "LOAD_LOOKUPS_FAILURE":
       return { ...state, lookupsStatus: "error", lookupsError: action.error };
     case "TOGGLE_ENTRY_SUCCESS":

@@ -3,7 +3,8 @@
 export const ADMIN_HUB_STRINGS = {
   // -- Page --
   pageTitle: "Painel Administrativo",
-  pageSubtitle: "Gerencie pessoas, tabelas de refer\u00eancia, solicita\u00e7\u00f5es e auditoria",
+  pageSubtitle:
+    "Gerencie pessoas, tabelas de refer\u00eancia, solicita\u00e7\u00f5es e auditoria",
 
   // -- Tabs --
   tabDashboard: "Dashboard",
